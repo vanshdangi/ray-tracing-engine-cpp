@@ -20,3 +20,7 @@ target_include_directories(ray_tracing_engine
     PRIVATE
         include
 )
+
+enable_testing()
+
+add_subdirectory(tests)
