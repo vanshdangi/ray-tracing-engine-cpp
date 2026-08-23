@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
-project(atlas_ai LANGUAGES CXX)
+
+project(ray_tracing_engine LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,6 +22,14 @@ target_include_directories(ray_tracing_engine
         include
 )
 
-enable_testing()
+# ---------------- SFML ----------------
+find_package(SFML 3 REQUIRED COMPONENTS Graphics)
 
+target_link_libraries(ray_tracing_engine
+    PRIVATE
+        SFML::Graphics
+)
+
+# ---------------- Tests ----------------
+enable_testing()
 add_subdirectory(tests)
