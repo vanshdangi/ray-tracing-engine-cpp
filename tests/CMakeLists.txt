@@ -37,8 +37,17 @@ endfunction()
 
 
 # Maths
-
 add_ray_tracing_engine_test(
     Vec3Test
     maths/vec3Tests.cpp
+)
+add_ray_tracing_engine_test(
+    Point3Test
+    maths/point3Tests.cpp
+)
+
+#Core
+add_ray_tracing_engine_test(
+    RayTest
+    core/rayTests.cpp
 )
