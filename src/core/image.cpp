@@ -7,3 +7,11 @@ void Image::setPixel(int x, int y, Color color) {
 Color Image::getPixel(int x, int y) const {
     return pixels[y*width + x];
 }
+
+float Image::getWidth() const {
+    return width;
+}
+
+float Image::getHeight() const {
+    return height;
+}

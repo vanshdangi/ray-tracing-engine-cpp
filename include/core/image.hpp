@@ -8,6 +8,8 @@ public:
 
     void setPixel(int x, int y, Color color);
     Color getPixel(int x, int y) const;
+    float getWidth() const;
+    float getHeight() const;
 
 private:
     int width;
