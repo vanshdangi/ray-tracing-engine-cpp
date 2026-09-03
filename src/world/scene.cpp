@@ -1,9 +1,9 @@
 #include <world/scene.hpp>
 
-const std::vector<Sphere>& Scene::getObjects() const {
+const std::vector<std::unique_ptr<Object3D>>& Scene::getObjects() const {
     return objects;
 }
 
-void Scene::addObject(Sphere obj){
-    objects.push_back(obj);
+void Scene::addObject(std::unique_ptr<Object3D> obj){
+    objects.push_back(std::move(obj));
 }

@@ -1,4 +1,4 @@
-#include <world/sphere.hpp>
+#include <world/objects/sphere.hpp>
 
 Sphere::Sphere(Point3 center_, float raidus_) : center(center_), radius(raidus_) {
 
@@ -32,6 +32,10 @@ float Sphere::intersects(const Ray& ray) const {
             return std::min(root1, root2);
         }
     }
+}
+
+Vec3 Sphere::getNormal(const Point3& point) const {
+    return (point - center).normalized();
 }
 
 Point3 Sphere::getCenter() const {

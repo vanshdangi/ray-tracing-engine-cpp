@@ -15,8 +15,10 @@ set(SOURCES
 
     src/core/image.cpp
 
-    src/world/sphere.cpp
     src/world/scene.cpp
+    src/world/hitRecord.cpp
+
+    src/world/objects/sphere.cpp
 )
 
 # ---------------- Executable ----------------

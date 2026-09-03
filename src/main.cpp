@@ -8,6 +8,8 @@
 #include <core/color.hpp>
 #include <rendering/renderer.hpp>
 #include <world/scene.hpp>
+#include <world/objects/sphere.hpp>
+#include <memory>
 
 int main()
 {
@@ -33,8 +35,8 @@ int main()
     Image img(WIDTH, HEIGHT);
     Scene scene;
 
-    scene.addObject(Sphere(Point3(0.0f, 8.0f, 0.0f), 2.0f));
-    scene.addObject(Sphere(Point3(0.0f, 5.0f, 0.0f), 1.0f));
+    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 8.0f, 0.0f), 2.0f));
+    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 5.0f, 0.0f), 1.0f));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene);
