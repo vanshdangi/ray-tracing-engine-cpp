@@ -5,8 +5,9 @@
 
 class Sphere{
 public:
-    Sphere(Point3 _center, float _radius);
-    float intersects(const Ray& ray);
+    Sphere(Point3 center_, float radius_);
+    float intersects(const Ray& ray) const;
+    Point3 getCenter() const;
 
 private:
     Point3 center;

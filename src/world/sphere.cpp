@@ -1,10 +1,10 @@
-#include <scene/sphere.hpp>
+#include <world/sphere.hpp>
 
-Sphere::Sphere(Point3 _center, float _raidus) : center(_center), radius(_raidus) {
+Sphere::Sphere(Point3 center_, float raidus_) : center(center_), radius(raidus_) {
 
 }
 
-float Sphere::intersects(const Ray& ray) {
+float Sphere::intersects(const Ray& ray) const {
     float a = ray.direction.magnitudeSquared();
     float b = 2*(ray.origin - center).dot(ray.direction);
     float c = (ray.origin - center).magnitudeSquared() - radius*radius;
@@ -32,4 +32,8 @@ float Sphere::intersects(const Ray& ray) {
             return std::min(root1, root2);
         }
     }
+}
+
+Point3 Sphere::getCenter() const {
+    return center;
 }

@@ -7,6 +7,7 @@
 #include <core/image.hpp>
 #include <core/color.hpp>
 #include <rendering/renderer.hpp>
+#include <world/scene.hpp>
 
 int main()
 {
@@ -18,6 +19,8 @@ int main()
         "Ray Tracing Engine"
     );
 
+
+    // DECLARATIONS
     Camera mainCam(
         Point3(0.0f, 0.0f, 0.0f),
         Vec3(0.0f, 1.0f, 0.0f),
@@ -27,10 +30,14 @@ int main()
         HEIGHT
     );
 
-    Image image(WIDTH, HEIGHT);
+    Image img(WIDTH, HEIGHT);
+    Scene scene;
+
+    scene.addObject(Sphere(Point3(0.0f, 8.0f, 0.0f), 2.0f));
+    scene.addObject(Sphere(Point3(0.0f, 5.0f, 0.0f), 1.0f));
 
     // Generate the test image.
-    Renderer renderer(mainCam, image);
+    Renderer renderer(mainCam, img, scene);
     renderer.render();
 
     // Convert your Image into an SFML image.
@@ -40,7 +47,7 @@ int main()
     {
         for (unsigned int x = 0; x < WIDTH; ++x)
         {
-            Color color = image.getPixel(x, y);
+            Color color = img.getPixel(x, y);
 
             sfImage.setPixel(
                 {x, y},
