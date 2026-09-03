@@ -9,9 +9,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ---------------- Sources ----------------
 set(SOURCES
     src/main.cpp
+    
     src/rendering/camera.cpp
     src/rendering/renderer.cpp
+
     src/core/image.cpp
+
+    src/scene/sphere.cpp
 )
 
 # ---------------- Executable ----------------
