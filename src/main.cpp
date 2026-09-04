@@ -9,6 +9,7 @@
 #include <rendering/renderer.hpp>
 #include <world/scene.hpp>
 #include <world/objects/sphere.hpp>
+#include <world/objects/cube.hpp>
 #include <memory>
 
 int main()
@@ -36,7 +37,9 @@ int main()
     Scene scene;
 
     scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 8.0f, 0.0f), 2.0f));
-    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 5.0f, 0.0f), 1.0f));
+    scene.addObject(std::make_unique<Sphere>(Point3(-3.0f, 5.0f, 4.0f), 1.0f));
+    scene.addObject(std::make_unique<AABB>(Point3(3.0f, 8.0f, 5.0f), 2.0f));
+    scene.addObject(std::make_unique<AABB>(Point3(2.5f, 12.0f, 4.5f), 2.0f));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene);

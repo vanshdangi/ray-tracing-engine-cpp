@@ -19,6 +19,7 @@ set(SOURCES
     src/world/hitRecord.cpp
 
     src/world/objects/sphere.cpp
+    src/world/objects/cube.cpp
 )
 
 # ---------------- Executable ----------------
