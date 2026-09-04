@@ -17,6 +17,7 @@ set(SOURCES
 
     src/world/scene.cpp
     src/world/hitRecord.cpp
+    src/world/lighting.cpp
 
     src/world/objects/sphere.cpp
     src/world/objects/cube.cpp

@@ -1,6 +1,6 @@
 #include <world/objects/cube.hpp>
 
-AABB::AABB(Point3 center_, float halfSize_) : center(center_), halfSize(halfSize_) {}
+AABB::AABB(Point3 center_, float halfSize_, Material mat_) : Object3D(mat_), center(center_), halfSize(halfSize_) {}
 
 float AABB::intersects(const Ray& ray) const {
     // x-plane

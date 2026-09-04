@@ -1,6 +1,6 @@
 #include <world/objects/sphere.hpp>
 
-Sphere::Sphere(Point3 center_, float raidus_) : center(center_), radius(raidus_) {}
+Sphere::Sphere(Point3 center_, float raidus_, Material mat_) : Object3D(mat_), center(center_), radius(raidus_) {}
 
 float Sphere::intersects(const Ray& ray) const {
     float a = ray.direction.magnitudeSquared();

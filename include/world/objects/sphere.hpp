@@ -6,7 +6,7 @@
 
 class Sphere : public Object3D{
 public:
-    Sphere(Point3 center_, float radius_);
+    Sphere(Point3 center_, float radius_, Material mat_);
     float intersects(const Ray& ray) const;
     Vec3 getNormal(const Point3& point) const;
     Point3 getCenter() const;

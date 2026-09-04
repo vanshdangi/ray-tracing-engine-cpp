@@ -6,6 +6,7 @@
 
 class Object3D {
 public:
+    Object3D(Material mat_) : mat(mat_) {}
     virtual ~Object3D() = default;
     virtual float intersects(const Ray& ray) const = 0;
     virtual Vec3 getNormal(const Point3& Point) const = 0;

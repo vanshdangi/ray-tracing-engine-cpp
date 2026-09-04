@@ -3,13 +3,15 @@
 #include <core/ray.hpp>
 #include <rendering/camera.hpp>
 #include <world/scene.hpp>
+#include <world/lighting.hpp>
 
 class Renderer{
 public:
-    Renderer(const Camera& cam_, Image& img_, const Scene& scene_);
+    Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_);
     void render();
 private:
     const Camera& cam;
     Image& img;
     const Scene& scene;
+    const PointLight& light;
 };

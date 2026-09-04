@@ -8,6 +8,7 @@
 #include <core/color.hpp>
 #include <rendering/renderer.hpp>
 #include <world/scene.hpp>
+#include <world/lighting.hpp>
 #include <world/objects/sphere.hpp>
 #include <world/objects/cube.hpp>
 #include <memory>
@@ -32,17 +33,19 @@ int main()
         WIDTH,
         HEIGHT
     );
-
+    PointLight light(Point3(4.0f, 4.0f, -7.0f), 0.005f, Color(255, 255, 255));
     Image img(WIDTH, HEIGHT);
     Scene scene;
 
-    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 8.0f, 0.0f), 2.0f));
-    scene.addObject(std::make_unique<Sphere>(Point3(-3.0f, 5.0f, 4.0f), 1.0f));
-    scene.addObject(std::make_unique<AABB>(Point3(3.0f, 8.0f, 5.0f), 2.0f));
-    scene.addObject(std::make_unique<AABB>(Point3(2.5f, 12.0f, 4.5f), 2.0f));
+    Material mat;
+    mat.albedo = Color(200, 50, 50);
+    scene.addObject(std::make_unique<Sphere>(Point3(-3.0f, 5.0f, 4.0f), 1.0f, mat));
+    scene.addObject(std::make_unique<Sphere>(Point3(3.0f, 7.0f, 0.0f), 1.0f, mat));
+    scene.addObject(std::make_unique<AABB>(Point3(3.0f, 8.0f, 5.0f), 2.0f, mat));
+    scene.addObject(std::make_unique<AABB>(Point3(2.5f, 14.0f, 4.5f), 2.0f, mat));
 
     // Generate the test image.
-    Renderer renderer(mainCam, img, scene);
+    Renderer renderer(mainCam, img, scene, light);
     renderer.render();
 
     // Convert your Image into an SFML image.

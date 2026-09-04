@@ -3,9 +3,8 @@
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
 
-Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_) : cam(cam_), img(img_), scene(scene_) {
-
-}
+Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_)
+    : cam(cam_), img(img_), scene(scene_), light(light_) {}
 
 void Renderer::render() {
     for(size_t y = 0; y < img.getHeight(); ++y){
@@ -17,7 +16,6 @@ void Renderer::render() {
                 0.125f, 0.375f, 0.625f, 0.875f,
                 0.125f, 0.375f, 0.625f, 0.875f
             };
-
             float sampleY[16] = {
                 0.125f, 0.125f, 0.125f, 0.125f,
                 0.375f, 0.375f, 0.375f, 0.375f,
@@ -31,7 +29,7 @@ void Renderer::render() {
                 bool hitSomething = false;
 
                 Ray ray = cam.generateRay(x, y, sampleX[i], sampleY[i]);
-                Color color;
+                Color lDiffuse;
     
                 for(const auto& obj : scene.getObjects()) {
                     float t = obj->intersects(ray);
@@ -44,18 +42,50 @@ void Renderer::render() {
                 if (hitSomething) {
                     HitRecord hit(closestT, ray.at(closestT), *closestObj);
 
-                    // Convert normal direction from [-1, 1] to [0, 255].
-                    color.r = (hit.normal.x + 1.0f) * 127.5f;
-                    color.g = (hit.normal.y + 1.0f) * 127.5f;
-                    color.b = (hit.normal.z + 1.0f) * 127.5f;
+                    
+                    // Lighting Calculation
+                    Color kd = hit.object.getMaterial().albedo;
+                    Vec3 normal = hit.normal;
+                    float diffuseFactor = light.intensity * std::max(0.0f, normal.dot((light.position - hit.point).normalized()));
+
+                    // Shadow
+                    Point3 shadowPoint = hit.point + hit.normal*(1e-5);
+                    Ray shadowRay;
+                    shadowRay.origin = shadowPoint;
+                    shadowRay.direction = (light.position - hit.point).normalized();
+
+                    bool inShadow = false;
+                    for(const auto& obj : scene.getObjects()) {
+                        float t = obj->intersects(shadowRay);
+                        if(t != -1 && t < (light.position - hit.point).magnitude()) {
+                            inShadow = true;
+                            break;
+                        }
+                    }
+
+                    if(inShadow) {
+                        lDiffuse.r = 0;
+                        lDiffuse.g = 0;
+                        lDiffuse.b = 0;
+                    } else {
+                        lDiffuse.r = kd.r * light.color.r * diffuseFactor;
+                        lDiffuse.g = kd.g * light.color.g * diffuseFactor;
+                        lDiffuse.b = kd.b * light.color.b * diffuseFactor;
+                    }
                 }
-                finalColor.r += color.r;
-                finalColor.g += color.g;
-                finalColor.b += color.b;
+                finalColor.r += lDiffuse.r;
+                finalColor.g += lDiffuse.g;
+                finalColor.b += lDiffuse.b;
+
             }
             finalColor.r /= 16.0f;
             finalColor.g /= 16.0f;
             finalColor.b /= 16.0f;
+
+            //clamp
+            finalColor.r = std::min(255.0f, std::max(0.0f, finalColor.r));
+            finalColor.g = std::min(255.0f, std::max(0.0f, finalColor.g));
+            finalColor.b = std::min(255.0f, std::max(0.0f, finalColor.b));
             img.setPixel(x, y, finalColor);
         }
     }

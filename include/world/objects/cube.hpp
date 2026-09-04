@@ -6,7 +6,7 @@
 
 class AABB : public Object3D{
 public:
-    AABB(Point3 center_, float halfSize_);
+    AABB(Point3 center_, float halfSize_, Material mat_);
     float intersects(const Ray& ray) const;
     Vec3 getNormal(const Point3& point) const;
     Point3 getCenter() const;
