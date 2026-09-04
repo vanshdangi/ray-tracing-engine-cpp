@@ -72,6 +72,26 @@ void Renderer::render() {
                         lDiffuse.g = kd.g * light.color.g * diffuseFactor;
                         lDiffuse.b = kd.b * light.color.b * diffuseFactor;
                     }
+                } else {
+                    // Background Gradient
+                    Color top(70, 150, 220);
+                    Color horizon(210, 235, 245);
+                    Color ground(95, 90, 85);
+
+                    if (ray.direction.x > 0.0f) {
+                        float t = ray.direction.x;
+
+                        lDiffuse.r = (1 - t) * horizon.r + t * top.r;
+                        lDiffuse.g = (1 - t) * horizon.g + t * top.g;
+                        lDiffuse.b = (1 - t) * horizon.b + t * top.b;
+                    }
+                    else {
+                        float t = -ray.direction.x;
+
+                        lDiffuse.r = (1 - t) * horizon.r + t * ground.r;
+                        lDiffuse.g = (1 - t) * horizon.g + t * ground.g;
+                        lDiffuse.b = (1 - t) * horizon.b + t * ground.b;
+                    }
                 }
                 finalColor.r += lDiffuse.r;
                 finalColor.g += lDiffuse.g;
