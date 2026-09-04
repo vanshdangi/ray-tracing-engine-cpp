@@ -11,7 +11,7 @@ public:
         float aspectRatio_,
         float imageWidth_,
         float imageHeight_);
-    Ray generateRay(int pixelX, int pixelY) const;
+    Ray generateRay(int pixelX, int pixelY, float sampleX, float sampleY) const;
 
 private:
     Point3 position;

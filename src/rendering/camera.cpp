@@ -28,11 +28,11 @@ Camera::Camera(Point3 position_,
     viewportWidth = viewportHeight*aspectRatio;
 }
 
-Ray Camera::generateRay(int pixelX, int pixelY) const {
+Ray Camera::generateRay(int pixelX, int pixelY, float sampleX, float sampleY) const {
     float pixelWidth = viewportWidth/imageWidth;
     float pixelHeight = viewportHeight/imageHeight;
-    float xOffset = (pixelX + 0.5f)*pixelWidth - viewportWidth/2.0f;
-    float yOffset = viewportHeight/2.0f - (pixelY + 0.5f)*pixelHeight;
+    float xOffset = (pixelX + sampleX)*pixelWidth - viewportWidth/2.0f;
+    float yOffset = viewportHeight/2.0f - (pixelY + sampleY)*pixelHeight;
 
     Point3 center = position + forward;
     Point3 pointOnViewPort = center + right*xOffset + up*yOffset;
