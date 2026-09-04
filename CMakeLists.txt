@@ -21,6 +21,7 @@ set(SOURCES
 
     src/world/objects/sphere.cpp
     src/world/objects/cube.cpp
+    src/world/objects/plane.cpp
 )
 
 # ---------------- Executable ----------------
