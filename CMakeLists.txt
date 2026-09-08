@@ -20,7 +20,7 @@ set(SOURCES
     src/world/lighting.cpp
 
     src/world/objects/sphere.cpp
-    src/world/objects/cube.cpp
+    src/world/objects/aabb.cpp
     src/world/objects/plane.cpp
 )
 

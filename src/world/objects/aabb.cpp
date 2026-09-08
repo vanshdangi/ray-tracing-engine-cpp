@@ -1,4 +1,5 @@
-#include <world/objects/cube.hpp>
+#include <world/objects/aabb.hpp>
+#include <algorithm>
 
 AABB::AABB(Point3 center_, float halfSize_, Material mat_) : Object3D(mat_), center(center_), halfSize(halfSize_) {}
 
@@ -9,6 +10,13 @@ float AABB::intersects(const Ray& ray) const {
 
     float tx1 = (minX - ray.origin.x)/ray.direction.x;
     float tx2 = (maxX - ray.origin.x)/ray.direction.x;
+    if(ray.direction.x == 0) {
+        if(ray.origin.x < minX || ray.origin.x > maxX) {
+            return -1;
+        }
+        tx1 = -std::numeric_limits<float>::infinity();
+        tx2 = std::numeric_limits<float>::infinity();
+    }
     float txMin = std::min(tx1, tx2);
     float txMax = std::max(tx1, tx2);
 
@@ -18,6 +26,13 @@ float AABB::intersects(const Ray& ray) const {
 
     float ty1 = (minY - ray.origin.y)/ray.direction.y;
     float ty2 = (maxY - ray.origin.y)/ray.direction.y;
+    if(ray.direction.y == 0) {
+        if(ray.origin.y < minY || ray.origin.y > maxY) {
+            return -1;
+        }
+        ty1 = -std::numeric_limits<float>::infinity();
+        ty2 = std::numeric_limits<float>::infinity();
+    }
     float tyMin = std::min(ty1, ty2);
     float tyMax = std::max(ty1, ty2);
 
@@ -27,6 +42,13 @@ float AABB::intersects(const Ray& ray) const {
 
     float tz1 = (minZ - ray.origin.z)/ray.direction.z;
     float tz2 = (maxZ - ray.origin.z)/ray.direction.z;
+    if(ray.direction.z == 0) {
+        if(ray.origin.z < minZ || ray.origin.z > maxZ) {
+            return -1;
+        }
+        tz1 = -std::numeric_limits<float>::infinity();
+        tz2 = std::numeric_limits<float>::infinity();
+    }
     float tzMin = std::min(tz1, tz2);
     float tzMax = std::max(tz1, tz2);
 
