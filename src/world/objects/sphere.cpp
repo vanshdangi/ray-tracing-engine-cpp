@@ -1,4 +1,5 @@
 #include <world/objects/sphere.hpp>
+#include <algorithm>
 
 Sphere::Sphere(Point3 center_, float raidus_, Material mat_) : Object3D(mat_), center(center_), radius(raidus_) {}
 

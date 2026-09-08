@@ -10,7 +10,7 @@
 #include <world/scene.hpp>
 #include <world/lighting.hpp>
 #include <world/objects/sphere.hpp>
-#include <world/objects/cube.hpp>
+#include <world/objects/aabb.hpp>
 #include <world/objects/plane.hpp>
 #include <memory>
 
