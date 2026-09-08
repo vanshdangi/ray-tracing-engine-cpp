@@ -28,23 +28,23 @@ int main()
     // DECLARATIONS
     Camera mainCam(
         Point3(0.0f, 0.0f, 0.0f),
-        Vec3(0.0f, 1.0f, 0.0f),
+        Vec3(0.0f, 0.0f, 1.0f),
         90.0f,
         static_cast<float>(WIDTH) / HEIGHT,
         WIDTH,
         HEIGHT
     );
-    PointLight light(Point3(4.0f, 4.0f, -7.0f), 0.005f, Color(255, 255, 255));
+    PointLight light(Point3(7.0f, 4.0f, 4.0f), 0.005f, Color(255, 255, 255));
     Image img(WIDTH, HEIGHT);
     Scene scene;
 
     Material mat;
     mat.albedo = Color(200, 50, 50);
-    scene.addObject(std::make_unique<Sphere>(Point3(-1.0f, 5.0f, 4.0f), 1.0f, mat));
-    scene.addObject(std::make_unique<Sphere>(Point3(3.0f, 7.0f, 0.0f), 1.0f, mat));
-    scene.addObject(std::make_unique<AABB>(Point3(3.0f, 8.0f, 5.0f), 2.0f, mat));
-    scene.addObject(std::make_unique<AABB>(Point3(2.5f, 14.0f, 4.5f), 2.0f, mat));
-    scene.addObject(std::make_unique<Plane>(Point3(-2.0f, 0.0f, 0.0f), Vec3(1.0f, 0.0f, 0.0f), mat));
+    scene.addObject(std::make_unique<Sphere>(Point3(-4.0f, -1.0f, 5.0f), 1.0f, mat));
+    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 3.0f, 7.0f), 1.0f, mat));
+    scene.addObject(std::make_unique<AABB>(Point3(-5.0f, 3.0f, 8.0f), 2.0f, mat));
+    scene.addObject(std::make_unique<AABB>(Point3(-4.5f, 2.5f, 14.0f), 2.0f, mat));
+    scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene, light);

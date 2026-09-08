@@ -20,8 +20,8 @@ Camera::Camera(Point3 position_,
     if(std::abs(forward.dot(worldUp)) > 0.999f){
         worldUp = Vec3(1.0f, 0.0f, 0.0f);
     }
-    right = forward.cross(worldUp).normalized();
-    up = right.cross(forward).normalized();
+    right = worldUp.cross(forward).normalized();
+    up = forward.cross(right).normalized();
 
     float fovRadians = fov * std::numbers::pi_v<float> / 180.0f;
     viewportHeight = 2*std::tan(fovRadians/2);
