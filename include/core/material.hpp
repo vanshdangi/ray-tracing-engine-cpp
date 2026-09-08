@@ -4,5 +4,6 @@
 struct Material {
     Color albedo;
     float metallic;
-    float roughness;    
+    float roughness;
+    float reflectivity = 0.0f;    
 };

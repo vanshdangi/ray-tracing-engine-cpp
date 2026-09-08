@@ -13,7 +13,7 @@ void Renderer::render() {
             for (size_t i = 0; i < 16; i++)
             {
                 Ray ray = cam.generateRay(x, y, sampleX[i], sampleY[i]);
-                Color sampleColor = traceRay(ray);
+                Color sampleColor = traceRay(ray, 0);
                 finalColor += sampleColor;
 
             }
@@ -28,14 +28,22 @@ void Renderer::render() {
     }
 }
 
-Color Renderer::traceRay(const Ray& ray) const {
+Color Renderer::traceRay(const Ray& ray, int depth) const {
     auto hit = findClosestHit(ray);
 
-    if (hit) {
-        return calculateLighting(*hit);
+    if (!hit) {
+        return calculateBackground(ray);
     }
 
-    return calculateBackground(ray);
+    Color local = calculateLighting(*hit);
+
+    if (depth >= maxReflectionDepth) {
+        return local;
+    }
+
+    Color reflectedColor = calculateReflection(ray, *hit, depth);
+    float reflectivity = hit->object.getMaterial().reflectivity;
+    return local * (1 - reflectivity) + reflectedColor * reflectivity;
 }
 
 std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
@@ -54,6 +62,13 @@ std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
     }
 
     return HitRecord(closestT, ray.at(closestT), *closestObj);
+}
+
+Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const {
+    Ray reflectedRay;
+    reflectedRay.direction = ray.direction - hit.normal*(2*(ray.direction.dot(hit.normal)));
+    reflectedRay.origin = hit.point + hit.normal*(1e-5);
+    return traceRay(reflectedRay, depth + 1);
 }
 
 Color Renderer::calculateLighting(const HitRecord& hit) const {

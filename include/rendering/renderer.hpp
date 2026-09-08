@@ -11,8 +11,9 @@ class Renderer{
 public:
     Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_);
     void render();
-    Color traceRay(const Ray& ray) const;
+    Color traceRay(const Ray& ray, int depth) const;
     std::optional<HitRecord> findClosestHit(const Ray& ray) const;
+    Color calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const;
     Color calculateLighting(const HitRecord& hit) const;
     Color calculateBackground(const Ray& ray) const;
 private:
@@ -20,6 +21,7 @@ private:
     Image& img;
     const Scene& scene;
     const PointLight& light;
+    const int maxReflectionDepth = 3;
 
     static constexpr float sampleX[16] = {
         0.125f, 0.375f, 0.625f, 0.875f,
