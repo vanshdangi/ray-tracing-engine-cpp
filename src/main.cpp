@@ -13,6 +13,7 @@
 #include <world/objects/aabb.hpp>
 #include <world/objects/plane.hpp>
 #include <world/objects/triangle.hpp>
+#include <world/objects/mesh.hpp>
 #include <memory>
 
 int main()
@@ -48,9 +49,28 @@ int main()
     scene.addObject(std::make_unique<AABB>(Point3(-5.0f, 3.0f, 8.0f), 2.0f, mat));
     scene.addObject(std::make_unique<AABB>(Point3(-4.5f, 2.5f, 14.0f), 2.0f, mat));
 
-    scene.addObject(std::make_unique<Triangle>(Point3(1.0f, 1.0f, 2.0f), Point3(1.5f, 1.866f, 2.0f), Point3(2.0f, 1.0f, 2.0f), mat));
+    scene.addObject(std::make_unique<Triangle>(Point3(1.0f, 1.0f, 2.0f), Point3(2.0f, 1.0f, 2.0f), Point3(1.5f, 1.866f, 2.0f), mat));
 
     scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
+
+    std::vector<Triangle> triangles;
+
+    triangles.emplace_back(
+        Point3(-1.0f, -1.0f, 3.0f),
+        Point3( 1.0f, -1.0f, 3.0f),
+        Point3( 1.0f,  1.0f, 3.0f),
+        mat
+    );
+
+    triangles.emplace_back(
+        Point3(-1.0f, -1.0f, 3.0f),
+        Point3( 1.0f,  1.0f, 3.0f),
+        Point3(-1.0f,  1.0f, 3.0f),
+        mat
+    );
+
+    Mesh mesh(triangles, mat);
+    scene.addObject(std::make_unique<Mesh>(mesh));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene, light);

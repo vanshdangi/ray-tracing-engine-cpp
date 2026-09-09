@@ -23,6 +23,7 @@ set(SOURCES
     src/world/objects/aabb.cpp
     src/world/objects/plane.cpp
     src/world/objects/triangle.cpp
+    src/world/objects/mesh.cpp
 )
 
 # ---------------- Executable ----------------
