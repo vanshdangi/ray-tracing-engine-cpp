@@ -73,6 +73,11 @@ add_ray_tracing_engine_test(
     objects/aabbTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/aabb.cpp
 )
+add_ray_tracing_engine_test(
+    TriangleTest
+    objects/triangleTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
+)
 
 #Rendering
 add_ray_tracing_engine_test(
