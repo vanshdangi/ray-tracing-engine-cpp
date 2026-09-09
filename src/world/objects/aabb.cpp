@@ -3,7 +3,7 @@
 
 AABB::AABB(Point3 center_, float halfSize_, Material mat_) : Object3D(mat_), center(center_), halfSize(halfSize_) {}
 
-float AABB::intersects(const Ray& ray) const {
+Intersection AABB::intersects(const Ray& ray) const {
     // x-plane
     float minX = center.x - halfSize;
     float maxX = center.x + halfSize;
@@ -12,7 +12,7 @@ float AABB::intersects(const Ray& ray) const {
     float tx2 = (maxX - ray.origin.x)/ray.direction.x;
     if(ray.direction.x == 0) {
         if(ray.origin.x < minX || ray.origin.x > maxX) {
-            return -1;
+            return {-1, this};
         }
         tx1 = -std::numeric_limits<float>::infinity();
         tx2 = std::numeric_limits<float>::infinity();
@@ -28,7 +28,7 @@ float AABB::intersects(const Ray& ray) const {
     float ty2 = (maxY - ray.origin.y)/ray.direction.y;
     if(ray.direction.y == 0) {
         if(ray.origin.y < minY || ray.origin.y > maxY) {
-            return -1;
+            return {-1, this};
         }
         ty1 = -std::numeric_limits<float>::infinity();
         ty2 = std::numeric_limits<float>::infinity();
@@ -44,7 +44,7 @@ float AABB::intersects(const Ray& ray) const {
     float tz2 = (maxZ - ray.origin.z)/ray.direction.z;
     if(ray.direction.z == 0) {
         if(ray.origin.z < minZ || ray.origin.z > maxZ) {
-            return -1;
+            return {-1, this};
         }
         tz1 = -std::numeric_limits<float>::infinity();
         tz2 = std::numeric_limits<float>::infinity();
@@ -57,14 +57,14 @@ float AABB::intersects(const Ray& ray) const {
     float tMax = std::min({txMax, tyMax, tzMax});
 
     if(tMin > tMax) {
-        return -1;
+        return {-1, this};
     } else {
         if(tMax < 0) {
-            return -1;
+            return {-1, this};
         } else if(tMin < 0) {
-            return tMax;
+            return {tMax, this};
         } else {
-            return tMin;
+            return {tMin, this};
         }
     }
 }

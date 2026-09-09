@@ -4,11 +4,18 @@
 #include <maths/vec3.hpp>
 #include <maths/point3.hpp>
 
+class Object3D;
+
+struct Intersection {
+    float t;
+    const Object3D* object;
+};
+
 class Object3D {
 public:
     Object3D(Material mat_) : mat(mat_) {}
     virtual ~Object3D() = default;
-    virtual float intersects(const Ray& ray) const = 0;
+    virtual Intersection intersects(const Ray& ray) const = 0;
     virtual Vec3 getNormal(const Point3& Point) const = 0;
 
     void setMaterial(const Material& material) {

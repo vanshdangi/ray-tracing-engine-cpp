@@ -51,10 +51,10 @@ std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
     const Object3D* closestObj = nullptr;
 
     for(const auto& obj : scene.getObjects()) {
-        float t = obj->intersects(ray);
-        if(t != -1 && t < closestT) {
-            closestT = t;
-            closestObj = obj.get();
+        Intersection interseciton = obj->intersects(ray);
+        if(interseciton.t != -1 && interseciton.t < closestT) {
+            closestT = interseciton.t;
+            closestObj = interseciton.object;
         }
     }
     if(closestObj == nullptr) {
@@ -87,8 +87,8 @@ Color Renderer::calculateLighting(const HitRecord& hit) const {
 
     bool inShadow = false;
     for(const auto& obj : scene.getObjects()) {
-        float t = obj->intersects(shadowRay);
-        if(t != -1 && t < (light.position - hit.point).magnitude()) {
+        Intersection interseciton = obj->intersects(shadowRay);
+        if(interseciton.t != -1 && interseciton.t < (light.position - hit.point).magnitude()) {
             inShadow = true;
             break;
         }
