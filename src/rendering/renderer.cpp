@@ -2,27 +2,56 @@
 #include <iostream>
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
+#include <thread>
 
 Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_)
     : cam(cam_), img(img_), scene(scene_), light(light_) {}
 
 void Renderer::render() {
-    for(size_t y = 0; y < img.getHeight(); ++y){
-        for(size_t x = 0; x < img.getWidth(); ++x){
+    unsigned int threadCount = std::thread::hardware_concurrency();
+
+    if (threadCount == 0)
+        threadCount = 4;
+
+    std::vector<std::thread> threads;
+
+    size_t rowsPerThread = img.getHeight() / threadCount;
+
+    for (unsigned int i = 0; i < threadCount; ++i) {
+        size_t startY = i * rowsPerThread;
+        size_t endY = (i == threadCount - 1)
+                    ? img.getHeight()
+                    : startY + rowsPerThread;
+
+        threads.emplace_back(&Renderer::renderRows, this, startY, endY);
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+}
+
+void Renderer::renderRows(size_t startY, size_t endY) {
+
+    for (size_t y = startY; y < endY; ++y) {
+
+        for (size_t x = 0; x < img.getWidth(); ++x) {
+
             Color finalColor;
-            for (size_t i = 0; i < 16; i++)
-            {
+
+            for (size_t i = 0; i < 16; ++i) {
                 Ray ray = cam.generateRay(x, y, sampleX[i], sampleY[i]);
                 Color sampleColor = traceRay(ray, 0);
                 finalColor += sampleColor;
-
             }
+
             finalColor /= 16.0f;
 
-            //clamp
+            // clamp
             finalColor.r = std::min(255.0f, std::max(0.0f, finalColor.r));
             finalColor.g = std::min(255.0f, std::max(0.0f, finalColor.g));
             finalColor.b = std::min(255.0f, std::max(0.0f, finalColor.b));
+
             img.setPixel(x, y, finalColor);
         }
     }

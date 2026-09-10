@@ -11,6 +11,7 @@ class Renderer{
 public:
     Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_);
     void render();
+    void renderRows(size_t startY, size_t endY);
     Color traceRay(const Ray& ray, int depth) const;
     std::optional<HitRecord> findClosestHit(const Ray& ray) const;
     Color calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const;
