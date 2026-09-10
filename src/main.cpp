@@ -14,6 +14,7 @@
 #include <world/objects/plane.hpp>
 #include <world/objects/triangle.hpp>
 #include <world/objects/mesh.hpp>
+#include <parser/objParser.hpp>
 #include <memory>
 
 int main()
@@ -43,36 +44,22 @@ int main()
     Material mat;
     mat.albedo = Color(200, 50, 50);
 
-    scene.addObject(std::make_unique<Sphere>(Point3(-4.0f, -1.0f, 5.0f), 1.0f, mat));
-    scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 3.0f, 7.0f), 1.0f, mat));
+    //scene.addObject(std::make_unique<Sphere>(Point3(-4.0f, -1.0f, 5.0f), 1.0f, mat));
+    //scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 3.0f, 7.0f), 1.0f, mat));
 
-    scene.addObject(std::make_unique<AABB>(Point3(-5.0f, 3.0f, 8.0f), 2.0f, mat));
-    scene.addObject(std::make_unique<AABB>(Point3(-4.5f, 2.5f, 14.0f), 2.0f, mat));
+    //scene.addObject(std::make_unique<AABB>(Point3(-5.0f, 3.0f, 8.0f), 2.0f, mat));
+    //scene.addObject(std::make_unique<AABB>(Point3(-4.5f, 2.5f, 14.0f), 2.0f, mat));
 
-    scene.addObject(std::make_unique<Triangle>(Point3(1.0f, 1.0f, 2.0f), Point3(2.0f, 1.0f, 2.0f), Point3(1.5f, 1.866f, 2.0f), mat));
+    //scene.addObject(std::make_unique<Triangle>(Point3(1.0f, 1.0f, 2.0f), Point3(2.0f, 1.0f, 2.0f), Point3(1.5f, 1.866f, 2.0f), mat));
 
-    scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
+    //scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
 
+    OBJParser parser;
+    OBJData data = parser.parser("monkey.obj");
 
-    Mesh hexagon(Point3(0.0f, 0.0f, 10.0f), mat);
+    Mesh obj(Point3(0.0f, -2.0f, 5.0f), data, mat);
 
-    Point3 center(0, 0, 0);
-
-    Point3 v0( 2.0f,  0.0f, 0.0f);
-    Point3 v1( 1.0f,  1.732f, 0.0f);
-    Point3 v2(-1.0f,  1.732f, 0.0f);
-    Point3 v3(-2.0f,  0.0f, 0.0f);
-    Point3 v4(-1.0f, -1.732f, 0.0f);
-    Point3 v5( 1.0f, -1.732f, 0.0f);
-
-    hexagon.addTriangle(center, v1, v0);
-    hexagon.addTriangle(center, v2, v1);
-    hexagon.addTriangle(center, v3, v2);
-    hexagon.addTriangle(center, v4, v3);
-    hexagon.addTriangle(center, v5, v4);
-    hexagon.addTriangle(center, v0, v5);
-
-    scene.addObject(std::make_unique<Mesh>(hexagon));
+    scene.addObject(std::make_unique<Mesh>(obj));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene, light);

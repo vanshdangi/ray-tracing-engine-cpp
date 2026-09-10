@@ -1,6 +1,6 @@
 #include <world/objects/mesh.hpp>
 
-Mesh::Mesh(Point3 position_, Material mat_) : Object3D(mat_), position(position_) {}
+Mesh::Mesh(Point3 position_, OBJData data_, Material mat_) : Object3D(mat_), position(position_), data(data_), triangles(data.triangles) {}
 
 Intersection Mesh::intersects(const Ray& ray) const {
     Ray localRay;

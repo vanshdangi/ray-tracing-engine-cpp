@@ -24,6 +24,8 @@ set(SOURCES
     src/world/objects/plane.cpp
     src/world/objects/triangle.cpp
     src/world/objects/mesh.cpp
+
+    src/parser/objParser.cpp
 )
 
 # ---------------- Executable ----------------
