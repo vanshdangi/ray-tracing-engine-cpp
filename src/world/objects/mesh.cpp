@@ -1,13 +1,17 @@
 #include <world/objects/mesh.hpp>
 
-Mesh::Mesh(std::vector<Triangle> triangles_, Material mat_) : Object3D(mat_), triangles(triangles_) {}
+Mesh::Mesh(Point3 position_, Material mat_) : Object3D(mat_), position(position_) {}
 
 Intersection Mesh::intersects(const Ray& ray) const {
+    Ray localRay;
+    localRay.origin = Point3(ray.origin - position);
+    localRay.direction = ray.direction;
+
     float closestT = std::numeric_limits<float>::infinity();
     const Triangle* closestObj = nullptr;
 
     for (const auto& triangle : triangles) {
-        Intersection intersection = triangle.intersects(ray);
+        Intersection intersection = triangle.intersects(localRay);
         if (intersection.t >= 0.0f && intersection.t < closestT) {
             closestT = intersection.t;
             closestObj = &triangle;
@@ -22,4 +26,8 @@ Intersection Mesh::intersects(const Ray& ray) const {
 
 Vec3 Mesh::getNormal(const Point3& point) const {
     return normal;
+}
+
+void Mesh::addTriangle(Point3 A, Point3 B, Point3 C) {
+    triangles.emplace_back(Triangle(A, B, C, getMaterial()));
 }

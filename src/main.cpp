@@ -18,8 +18,8 @@
 
 int main()
 {
-    constexpr unsigned int WIDTH = 800;
-    constexpr unsigned int HEIGHT = 600;
+    constexpr unsigned int WIDTH = 1440;
+    constexpr unsigned int HEIGHT = 810;
 
     sf::RenderWindow window(
         sf::VideoMode({WIDTH, HEIGHT}),
@@ -53,24 +53,26 @@ int main()
 
     scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
 
-    std::vector<Triangle> triangles;
 
-    triangles.emplace_back(
-        Point3(-1.0f, -1.0f, 3.0f),
-        Point3( 1.0f, -1.0f, 3.0f),
-        Point3( 1.0f,  1.0f, 3.0f),
-        mat
-    );
+    Mesh hexagon(Point3(0.0f, 0.0f, 10.0f), mat);
 
-    triangles.emplace_back(
-        Point3(-1.0f, -1.0f, 3.0f),
-        Point3( 1.0f,  1.0f, 3.0f),
-        Point3(-1.0f,  1.0f, 3.0f),
-        mat
-    );
+    Point3 center(0, 0, 0);
 
-    Mesh mesh(triangles, mat);
-    scene.addObject(std::make_unique<Mesh>(mesh));
+    Point3 v0( 2.0f,  0.0f, 0.0f);
+    Point3 v1( 1.0f,  1.732f, 0.0f);
+    Point3 v2(-1.0f,  1.732f, 0.0f);
+    Point3 v3(-2.0f,  0.0f, 0.0f);
+    Point3 v4(-1.0f, -1.732f, 0.0f);
+    Point3 v5( 1.0f, -1.732f, 0.0f);
+
+    hexagon.addTriangle(center, v1, v0);
+    hexagon.addTriangle(center, v2, v1);
+    hexagon.addTriangle(center, v3, v2);
+    hexagon.addTriangle(center, v4, v3);
+    hexagon.addTriangle(center, v5, v4);
+    hexagon.addTriangle(center, v0, v5);
+
+    scene.addObject(std::make_unique<Mesh>(hexagon));
 
     // Generate the test image.
     Renderer renderer(mainCam, img, scene, light);
