@@ -71,26 +71,26 @@ Color Renderer::traceRay(const Ray& ray, int depth) const {
     }
 
     Color reflectedColor = calculateReflection(ray, *hit, depth);
-    float reflectivity = hit->object.getMaterial().reflectivity;
+    float reflectivity = hit->intersection.object->getMaterial().reflectivity;
     return local * (1 - reflectivity) + reflectedColor * reflectivity;
 }
 
 std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
     float closestT = std::numeric_limits<float>::infinity();
-    const Object3D* closestObj = nullptr;
+    std::optional<Intersection> closestintersection;
 
     for(const auto& obj : scene.getObjects()) {
         Intersection interseciton = obj->intersects(ray);
         if(interseciton.t != -1 && interseciton.t < closestT) {
             closestT = interseciton.t;
-            closestObj = interseciton.object;
+            closestintersection = interseciton;
         }
     }
-    if(closestObj == nullptr) {
+    if(!closestintersection) {
         return std::nullopt;
     }
 
-    return HitRecord(closestT, ray.at(closestT), *closestObj);
+    return HitRecord(ray.at(closestT), *closestintersection);
 }
 
 Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const {
@@ -104,7 +104,7 @@ Color Renderer::calculateLighting(const HitRecord& hit) const {
     Color lDiffuse;
 
     // Lighting Calculation
-    Color kd = hit.object.getMaterial().albedo;
+    Color kd = hit.intersection.object->getMaterial().albedo;
     Vec3 normal = hit.normal;
     float diffuseFactor = light.intensity * std::max(0.0f, normal.dot((light.position - hit.point).normalized()));
 

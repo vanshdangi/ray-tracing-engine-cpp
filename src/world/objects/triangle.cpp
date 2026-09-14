@@ -42,3 +42,7 @@ Intersection Triangle::intersects(const Ray& ray) const {
 Vec3 Triangle::getNormal(const Point3& point) const {
     return normal;
 }
+
+Vec3 Triangle::transformNormal(const Vec3& localNormal) const {
+    return localNormal;
+}

@@ -1,72 +1,49 @@
 #include <world/objects/aabb.hpp>
 #include <algorithm>
+#include <cmath>
+#include <limits>
+#include <maths/matrix4.hpp>
 
-AABB::AABB(Point3 center_, float halfSize_, Material mat_) : Object3D(mat_), center(center_), halfSize(halfSize_) {}
+AABB::AABB(Transform transform_, float halfSize_, Material mat_) : Object3D(mat_), transform(transform_), halfSize(halfSize_) {}
 
 Intersection AABB::intersects(const Ray& ray) const {
-    // x-plane
-    float minX = center.x - halfSize;
-    float maxX = center.x + halfSize;
+    Ray localRay = transform.toLocal(ray);
 
-    float tx1 = (minX - ray.origin.x)/ray.direction.x;
-    float tx2 = (maxX - ray.origin.x)/ray.direction.x;
-    if(ray.direction.x == 0) {
-        if(ray.origin.x < minX || ray.origin.x > maxX) {
-            return {-1, this};
+    float tMin = -std::numeric_limits<float>::infinity();
+    float tMax = std::numeric_limits<float>::infinity();
+
+    const auto updateSlab = [&](float origin, float direction, float minimum, float maximum) {
+        if (direction == 0.0f) {
+            return origin >= minimum && origin <= maximum;
         }
-        tx1 = -std::numeric_limits<float>::infinity();
-        tx2 = std::numeric_limits<float>::infinity();
-    }
-    float txMin = std::min(tx1, tx2);
-    float txMax = std::max(tx1, tx2);
 
-    // y-plane
-    float minY = center.y - halfSize;
-    float maxY = center.y + halfSize;
-
-    float ty1 = (minY - ray.origin.y)/ray.direction.y;
-    float ty2 = (maxY - ray.origin.y)/ray.direction.y;
-    if(ray.direction.y == 0) {
-        if(ray.origin.y < minY || ray.origin.y > maxY) {
-            return {-1, this};
+        float near = (minimum - origin) / direction;
+        float far = (maximum - origin) / direction;
+        if (near > far) {
+            std::swap(near, far);
         }
-        ty1 = -std::numeric_limits<float>::infinity();
-        ty2 = std::numeric_limits<float>::infinity();
+
+        tMin = std::max(tMin, near);
+        tMax = std::min(tMax, far);
+        return tMin <= tMax;
+    };
+
+    if (!updateSlab(localRay.origin.x, localRay.direction.x, center.x - halfSize, center.x + halfSize) ||
+        !updateSlab(localRay.origin.y, localRay.direction.y, center.y - halfSize, center.y + halfSize) ||
+        !updateSlab(localRay.origin.z, localRay.direction.z, center.z - halfSize, center.z + halfSize)) {
+        return {-1, this, nullptr};
     }
-    float tyMin = std::min(ty1, ty2);
-    float tyMax = std::max(ty1, ty2);
-
-    // z-plane
-    float minZ = center.z - halfSize;
-    float maxZ = center.z + halfSize;
-
-    float tz1 = (minZ - ray.origin.z)/ray.direction.z;
-    float tz2 = (maxZ - ray.origin.z)/ray.direction.z;
-    if(ray.direction.z == 0) {
-        if(ray.origin.z < minZ || ray.origin.z > maxZ) {
-            return {-1, this};
-        }
-        tz1 = -std::numeric_limits<float>::infinity();
-        tz2 = std::numeric_limits<float>::infinity();
-    }
-    float tzMin = std::min(tz1, tz2);
-    float tzMax = std::max(tz1, tz2);
-
-    // Find Intersection
-    float tMin = std::max({txMin, tyMin, tzMin});
-    float tMax = std::min({txMax, tyMax, tzMax});
 
     if(tMin > tMax) {
-        return {-1, this};
-    } else {
-        if(tMax < 0) {
-            return {-1, this};
-        } else if(tMin < 0) {
-            return {tMax, this};
-        } else {
-            return {tMin, this};
-        }
+        return {-1, this, nullptr};
     }
+
+    float t = tMin < 0 ? tMax : tMin;
+    if (t < 0) {
+        return {-1, this, nullptr};
+    }
+
+    return {t, this, nullptr};
 }
 
 bool areEqualAbsolute(double a, double b, double epsilon = 1e-5) {
@@ -74,6 +51,8 @@ bool areEqualAbsolute(double a, double b, double epsilon = 1e-5) {
 }
 
 Vec3 AABB::getNormal(const Point3& point) const {
+    Point3 local = transform.toLocal({point, Vec3(0.0f, 0.0f, 0.0f)}).origin;
+
     // x-plane
     float minX = center.x - halfSize;
     float maxX = center.x + halfSize;
@@ -84,22 +63,22 @@ Vec3 AABB::getNormal(const Point3& point) const {
     float minZ = center.z - halfSize;
     float maxZ = center.z + halfSize;
 
-    if(areEqualAbsolute(point.x, minX)){
+    if(areEqualAbsolute(local.x, minX)){
         return Vec3(-1.0f, 0.0f, 0.0f);
 
-    } else if(areEqualAbsolute(point.x, maxX)){
+    } else if(areEqualAbsolute(local.x, maxX)){
         return Vec3(1.0f, 0.0f, 0.0f);
         
-    } else if(areEqualAbsolute(point.y, minY)){
+    } else if(areEqualAbsolute(local.y, minY)){
         return Vec3(0.0f, -1.0f, 0.0f);
 
-    } else if(areEqualAbsolute(point.y, maxY)){
+    } else if(areEqualAbsolute(local.y, maxY)){
         return Vec3(0.0f, 1.0f, 0.0f);
 
-    } else if(areEqualAbsolute(point.z, minZ)){
+    } else if(areEqualAbsolute(local.z, minZ)){
         return Vec3(0.0f, 0.0f, -1.0f);
 
-    } else if(areEqualAbsolute(point.z, maxZ)){
+    } else if(areEqualAbsolute(local.z, maxZ)){
         return Vec3(0.0f, 0.0f, 1.0f);
 
     } else {
@@ -107,8 +86,11 @@ Vec3 AABB::getNormal(const Point3& point) const {
     }
 }
 
+Vec3 AABB::transformNormal(const Vec3& localNormal) const {
+    return transform.transformNormal(localNormal);
+}
 
 
 Point3 AABB::getCenter() const {
-    return center;
+    return transform.toWorld(center);
 }

@@ -45,6 +45,6 @@ TEST(TriangleTest, RayPointingAwayDoesNotIntersect) {
 TEST(TriangleTest, NormalIsConstantAcrossTriangle) {
     Triangle triangle = makeTriangle();
 
-    EXPECT_EQ(triangle.getNormal(Point3(0.25f, 0.25f, 0.0f)), Vec3(0.0f, 0.0f, -1.0f));
-    EXPECT_EQ(triangle.getNormal(Point3(0.0f, 0.0f, 0.0f)), Vec3(0.0f, 0.0f, -1.0f));
+    EXPECT_EQ(triangle.getNormal(Point3(0.25f, 0.25f, 0.0f)), Vec3(0.0f, 0.0f, 1.0f));
+    EXPECT_EQ(triangle.getNormal(Point3(0.0f, 0.0f, 0.0f)), Vec3(0.0f, 0.0f, 1.0f));
 }

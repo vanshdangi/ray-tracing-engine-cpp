@@ -3,15 +3,18 @@
 #include <maths/vec3.hpp>
 #include <core/ray.hpp>
 #include <world/object3D.hpp>
+#include <world/transform.hpp>
 
 class AABB : public Object3D{
 public:
-    AABB(Point3 center_, float halfSize_, Material mat_);
+    AABB(Transform transform_, float halfSize_, Material mat_);
     Intersection intersects(const Ray& ray) const;
     Vec3 getNormal(const Point3& point) const;
+    Vec3 transformNormal(const Vec3& localNormal) const;
     Point3 getCenter() const;
 
 private:
-    Point3 center;
+    Point3 center = Point3(0, 0, 0);
+    Transform transform;
     float halfSize;
 };

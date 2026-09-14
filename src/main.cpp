@@ -17,6 +17,125 @@
 #include <parser/objParser.hpp>
 #include <memory>
 
+Scene createDemoScene() {
+    Scene scene;
+    
+    // Materials
+    Material red;
+    red.albedo = Color(200, 50, 50);
+    
+    Material green;
+    green.albedo = Color(50, 200, 80);
+    
+    Material blue;
+    blue.albedo = Color(50, 100, 220);
+    
+    Material yellow;
+    yellow.albedo = Color(220, 200, 50);
+    
+    Material monkeyMat;
+    monkeyMat.albedo = Color(180, 100, 50);
+    
+    
+    // --------------------------------------------------
+    // Sphere
+    // --------------------------------------------------
+    
+    Transform sphereTransform(
+        Point3(-3.0f, 0.0f, 8.0f),
+        Vec3(0.0f, 0.0f, 0.0f),
+        Vec3(1.5f, 1.5f, 1.5f)
+    );
+
+    scene.addObject(
+        std::make_unique<Sphere>(
+            sphereTransform,
+            1.0f,
+            red
+        )
+    );
+    
+    
+    // --------------------------------------------------
+    // AABB
+    // --------------------------------------------------
+    
+    Transform boxTransform(
+        Point3(3.0f, 0.0f, 8.0f),
+        Vec3(0.0f, 0.0f, 30.0f),
+        Vec3(1.5f, 1.0f, 1.0f)
+    );
+    
+    scene.addObject(
+        std::make_unique<AABB>(
+            boxTransform,
+            1.0f,
+            green
+        )
+    );
+    
+    
+    // --------------------------------------------------
+    // Plane
+    // --------------------------------------------------
+    
+    Transform planeTransform(
+        Point3(0.0f, -2.0f, 8.0f),
+        Vec3(0.0f, 0.0f, 0.0f),
+        Vec3(1.0f, 1.0f, 1.0f)
+    );
+    
+    scene.addObject(
+        std::make_unique<Plane>(
+            planeTransform,
+            Vec3(0.0f, 1.0f, 0.0f),
+            blue
+        )
+    );
+    
+    
+    // --------------------------------------------------
+    // Standalone triangle
+    // --------------------------------------------------
+    
+    scene.addObject(
+        std::make_unique<Triangle>(
+            Point3(-1.0f, 1.5f, 6.0f),
+            Point3( 0.0f, 3.5f, 6.0f),
+            Point3( 1.0f, 1.5f, 6.0f),
+            yellow
+        )
+    );
+    
+    
+    // --------------------------------------------------
+    // Mesh
+    // --------------------------------------------------
+    
+    OBJParser parser;
+    
+    OBJData data = parser.parser("objects/suzanne.obj");
+    
+    Transform meshTransform(
+        Point3(0.0f, 0.0f, 10.0f),
+        Vec3(0.0f, 180.0f, 0.0f),
+        Vec3(2.0f, 2.0f, 2.0f)
+    );
+    
+    scene.addObject(
+        std::make_unique<Mesh>(
+            meshTransform,
+            data,
+            monkeyMat
+        )
+    );
+
+    
+    return scene;
+    
+}
+
+
 int main()
 {
     constexpr unsigned int WIDTH = 1440;
@@ -27,7 +146,6 @@ int main()
         "Ray Tracing Engine"
     );
 
-
     // DECLARATIONS
     Camera mainCam(
         Point3(0.0f, 0.0f, 0.0f),
@@ -37,31 +155,14 @@ int main()
         WIDTH,
         HEIGHT
     );
-    PointLight light(Point3(7.0f, 4.0f, 4.0f), 0.005f, Color(255, 255, 255));
+    PointLight light(
+        Point3(0.0f, 5.0f, 2.0f),
+        0.005f,
+        Color(255, 255, 255)
+    );
+
     Image img(WIDTH, HEIGHT);
-    Scene scene;
-
-    Material mat;
-    mat.albedo = Color(200, 50, 50);
-
-    //scene.addObject(std::make_unique<Sphere>(Point3(-4.0f, -1.0f, 5.0f), 1.0f, mat));
-    //scene.addObject(std::make_unique<Sphere>(Point3(0.0f, 3.0f, 7.0f), 1.0f, mat));
-
-    //scene.addObject(std::make_unique<AABB>(Point3(-5.0f, 3.0f, 8.0f), 2.0f, mat));
-    //scene.addObject(std::make_unique<AABB>(Point3(-4.5f, 2.5f, 14.0f), 2.0f, mat));
-
-    //scene.addObject(std::make_unique<Triangle>(Point3(1.0f, 1.0f, 2.0f), Point3(2.0f, 1.0f, 2.0f), Point3(1.5f, 1.866f, 2.0f), mat));
-
-    //scene.addObject(std::make_unique<Plane>(Point3(0.0f, -2.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f), mat));
-
-    OBJParser parser;
-    OBJData data = parser.parser("monkey.obj");
-
-    Mesh obj(Point3(0.0f, -2.0f, 5.0f), data, mat);
-
-    scene.addObject(std::make_unique<Mesh>(obj));
-
-    // Generate the test image.
+    Scene scene = createDemoScene();
     Renderer renderer(mainCam, img, scene, light);
     renderer.render();
 

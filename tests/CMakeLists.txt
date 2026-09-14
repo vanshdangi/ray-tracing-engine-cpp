@@ -62,21 +62,25 @@ add_ray_tracing_engine_test(
     SphereTest
     objects/sphereTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/sphere.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
 add_ray_tracing_engine_test(
     PlaneTest
     objects/planeTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/plane.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
 add_ray_tracing_engine_test(
     AABBTest
     objects/aabbTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/aabb.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
 add_ray_tracing_engine_test(
     TriangleTest
     objects/triangleTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
 
 #Rendering

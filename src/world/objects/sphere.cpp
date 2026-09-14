@@ -1,12 +1,15 @@
 #include <world/objects/sphere.hpp>
 #include <algorithm>
+#include <maths/matrix4.hpp>
 
-Sphere::Sphere(Point3 center_, float raidus_, Material mat_) : Object3D(mat_), center(center_), radius(raidus_) {}
+Sphere::Sphere(Transform transform_, float raidus_, Material mat_) : Object3D(mat_), transform(transform_), radius(raidus_) {}
 
 Intersection Sphere::intersects(const Ray& ray) const {
-    float a = ray.direction.magnitudeSquared();
-    float b = 2*(ray.origin - center).dot(ray.direction);
-    float c = (ray.origin - center).magnitudeSquared() - radius*radius;
+    Ray localRay = transform.toLocal(ray);
+
+    float a = localRay.direction.magnitudeSquared();
+    float b = 2*(localRay.origin - center).dot(localRay.direction);
+    float c = (localRay.origin - center).magnitudeSquared() - radius*radius;
 
     float disc = b*b - 4*a*c;
     if(disc < 0) {
@@ -34,7 +37,12 @@ Intersection Sphere::intersects(const Ray& ray) const {
 }
 
 Vec3 Sphere::getNormal(const Point3& point) const {
-    return (point - center).normalized();
+    Point3 local = transform.toLocal({point, Vec3(0.0f, 0.0f, 0.0f)}).origin;
+    return (local - center).normalized();
+}
+
+Vec3 Sphere::transformNormal(const Vec3& localNormal) const {
+    return transform.transformNormal(localNormal);
 }
 
 Point3 Sphere::getCenter() const {
