@@ -1,5 +1,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include <render_stats.hpp>
 #include <core/ray.hpp>
 #include <rendering/camera.hpp>
 #include <maths/point3.hpp>
@@ -33,44 +34,25 @@ Scene createDemoScene() {
     Material yellow;
     yellow.albedo = Color(220, 200, 50);
     
-    Material monkeyMat;
-    monkeyMat.albedo = Color(180, 100, 50);
-    
-    
     // --------------------------------------------------
-    // Sphere
+    // Mesh
     // --------------------------------------------------
     
-    Transform sphereTransform(
-        Point3(-3.0f, 0.0f, 8.0f),
-        Vec3(0.0f, 0.0f, 0.0f),
-        Vec3(1.5f, 1.5f, 1.5f)
+    OBJParser parser;
+    
+    OBJData data = parser.parser("objects/suzanne.obj");
+    
+    Transform meshTransform(
+        Point3(0.0f, 0.0f, 10.0f),
+        Vec3(0.0f, 180.0f, 0.0f),
+        Vec3(2.0f, 2.0f, 2.0f)
     );
-
+    
     scene.addObject(
-        std::make_unique<Sphere>(
-            sphereTransform,
-            1.0f,
+        std::make_unique<Mesh>(
+            meshTransform,
+            data,
             red
-        )
-    );
-    
-    
-    // --------------------------------------------------
-    // AABB
-    // --------------------------------------------------
-    
-    Transform boxTransform(
-        Point3(3.0f, 0.0f, 8.0f),
-        Vec3(0.0f, 0.0f, 30.0f),
-        Vec3(1.5f, 1.0f, 1.0f)
-    );
-    
-    scene.addObject(
-        std::make_unique<AABB>(
-            boxTransform,
-            1.0f,
-            green
         )
     );
     
@@ -94,41 +76,6 @@ Scene createDemoScene() {
     );
     
     
-    // --------------------------------------------------
-    // Standalone triangle
-    // --------------------------------------------------
-    
-    scene.addObject(
-        std::make_unique<Triangle>(
-            Point3(-1.0f, 1.5f, 6.0f),
-            Point3( 0.0f, 3.5f, 6.0f),
-            Point3( 1.0f, 1.5f, 6.0f),
-            yellow
-        )
-    );
-    
-    
-    // --------------------------------------------------
-    // Mesh
-    // --------------------------------------------------
-    
-    OBJParser parser;
-    
-    OBJData data = parser.parser("objects/suzanne.obj");
-    
-    Transform meshTransform(
-        Point3(0.0f, 0.0f, 10.0f),
-        Vec3(0.0f, 180.0f, 0.0f),
-        Vec3(2.0f, 2.0f, 2.0f)
-    );
-    
-    scene.addObject(
-        std::make_unique<Mesh>(
-            meshTransform,
-            data,
-            monkeyMat
-        )
-    );
 
     
     return scene;
@@ -138,8 +85,10 @@ Scene createDemoScene() {
 
 int main()
 {
-    constexpr unsigned int WIDTH = 1440;
-    constexpr unsigned int HEIGHT = 810;
+    //constexpr unsigned int WIDTH = 1440;
+    //constexpr unsigned int HEIGHT = 810;
+    constexpr unsigned int WIDTH = 800;
+    constexpr unsigned int HEIGHT = 600;
 
     sf::RenderWindow window(
         sf::VideoMode({WIDTH, HEIGHT}),
@@ -165,6 +114,18 @@ int main()
     Scene scene = createDemoScene();
     Renderer renderer(mainCam, img, scene, light);
     renderer.render();
+
+    const RenderStats::Snapshot stats = renderStats.snapshot();
+    std::cout << "Render time: " << stats.renderTimeMs << " ms\n";
+    std::cout << "Pixels rendered: " << stats.pixelsRendered << '\n';
+    std::cout << "Primary rays: " << stats.primaryRays << '\n';
+    std::cout << "Rays traced: " << stats.raysTraced << '\n';
+    std::cout << "Shadow rays: " << stats.shadowRays << '\n';
+    std::cout << "Triangle tests: " << stats.triangleTests << '\n';
+    std::cout << "Pixels per second: " << stats.pixelsPerSecond << '\n';
+    std::cout << "Rays per second: " << stats.raysPerSecond << '\n';
+    std::cout << "Triangle tests per primary ray: "
+              << stats.triangleTestsPerPrimaryRay << '\n';
 
     // Convert your Image into an SFML image.
     sf::Image sfImage(sf::Vector2u{WIDTH, HEIGHT});

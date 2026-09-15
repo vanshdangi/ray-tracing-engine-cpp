@@ -1,7 +1,11 @@
+#include <iostream>
+#include <render_stats.hpp>
 #include <world/objects/mesh.hpp>
 #include <maths/matrix4.hpp>
 
-Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_), transform(transform_), data(data_), triangles(data.triangles) {}
+Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_), transform(transform_), data(data_), triangles(data.triangles) {
+    std::cout << "Total Triangles: " << triangles.size() << '\n';
+}
 
 Intersection Mesh::intersects(const Ray& ray) const {
     Ray localRay = transform.toLocal(ray);
@@ -10,6 +14,8 @@ Intersection Mesh::intersects(const Ray& ray) const {
     const Triangle* closestObj = nullptr;
 
     for (const auto& triangle : triangles) {
+        renderStats.recordTriangleTest();
+
         Intersection intersection = triangle.intersects(localRay);
         if (intersection.t >= 0.0f && intersection.t < closestT) {
             closestT = intersection.t;

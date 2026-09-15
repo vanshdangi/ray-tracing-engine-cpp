@@ -1,5 +1,6 @@
-#include <rendering/renderer.hpp>
 #include <iostream>
+#include <render_stats.hpp>
+#include <rendering/renderer.hpp>
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
 #include <thread>
@@ -8,10 +9,19 @@ Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const P
     : cam(cam_), img(img_), scene(scene_), light(light_) {}
 
 void Renderer::render() {
+    renderStats.beginRender();
+
     unsigned int threadCount = std::thread::hardware_concurrency();
 
     if (threadCount == 0)
         threadCount = 4;
+
+    threadCount = std::min<unsigned int>(threadCount, img.getHeight());
+
+    if (threadCount == 0) {
+        renderStats.finishRender();
+        return;
+    }
 
     std::vector<std::thread> threads;
 
@@ -29,6 +39,8 @@ void Renderer::render() {
     for (auto& thread : threads) {
         thread.join();
     }
+
+    renderStats.finishRender();
 }
 
 void Renderer::renderRows(size_t startY, size_t endY) {
@@ -41,9 +53,12 @@ void Renderer::renderRows(size_t startY, size_t endY) {
 
             for (size_t i = 0; i < 16; ++i) {
                 Ray ray = cam.generateRay(x, y, sampleX[i], sampleY[i]);
+                renderStats.recordPrimaryRay();
                 Color sampleColor = traceRay(ray, 0);
                 finalColor += sampleColor;
             }
+
+            renderStats.recordPixel();
 
             finalColor /= 16.0f;
 
@@ -58,6 +73,7 @@ void Renderer::renderRows(size_t startY, size_t endY) {
 }
 
 Color Renderer::traceRay(const Ray& ray, int depth) const {
+    renderStats.recordRay();
     auto hit = findClosestHit(ray);
 
     if (!hit) {
@@ -113,6 +129,7 @@ Color Renderer::calculateLighting(const HitRecord& hit) const {
     Ray shadowRay;
     shadowRay.origin = shadowPoint;
     shadowRay.direction = (light.position - hit.point).normalized();
+    renderStats.recordShadowRay();
 
     bool inShadow = false;
     for(const auto& obj : scene.getObjects()) {
