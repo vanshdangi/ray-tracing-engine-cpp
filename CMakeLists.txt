@@ -11,6 +11,8 @@ set(SOURCES
     src/main.cpp
 
     src/render_stats.cpp
+
+    src/bvh/boundingBox.cpp
     
     src/rendering/camera.cpp
     src/rendering/renderer.cpp

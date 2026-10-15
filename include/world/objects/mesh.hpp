@@ -7,6 +7,8 @@
 #include <world/objects/triangle.hpp>
 #include <parser/objParser.hpp>
 #include <world/transform.hpp>
+#include <bvh/bvh.hpp>
+#include <bvh/boundingBox.hpp>
 
 class Mesh : public Object3D{
 public:
@@ -21,7 +23,9 @@ private:
     OBJData data;
 
     std::vector<Triangle> triangles;
-
-    Point3 centroid;
+    std::unique_ptr<BVHNode> root;
     Vec3 normal;
+
+    std::unique_ptr<BVHNode> buildBVH(std::vector<Triangle*>& triangles);
+    Intersection traverseBVH(const BVHNode* node, const Ray& localRay) const;
 };

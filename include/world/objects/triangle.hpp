@@ -10,6 +10,10 @@ public:
     Intersection intersects(const Ray& ray) const;
     Vec3 getNormal(const Point3& Point) const;
     Vec3 transformNormal(const Vec3& localNormal) const;
+    Point3 getCentroid() const;
+    const Point3& getA() const;
+    const Point3& getB() const;
+    const Point3& getC() const;
 
 private:
     Point3 A;

@@ -46,3 +46,19 @@ Vec3 Triangle::getNormal(const Point3& point) const {
 Vec3 Triangle::transformNormal(const Vec3& localNormal) const {
     return localNormal;
 }
+
+Point3 Triangle::getCentroid() const {
+    return centroid;
+}
+
+const Point3& Triangle::getA() const {
+    return A;
+}
+
+const Point3& Triangle::getB() const {
+    return B;
+}
+
+const Point3& Triangle::getC() const {
+    return C;
+}
