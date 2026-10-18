@@ -33,7 +33,13 @@ Scene createDemoScene() {
     
     Material yellow;
     yellow.albedo = Color(220, 200, 50);
-    
+
+    Material white;
+    white.albedo = Color(255, 255, 255);
+
+    Material mirror;
+    mirror.reflectivity = 1.0f;
+
     // --------------------------------------------------
     // Mesh
     // --------------------------------------------------
@@ -71,7 +77,7 @@ Scene createDemoScene() {
         std::make_unique<Plane>(
             planeTransform,
             Vec3(0.0f, 1.0f, 0.0f),
-            blue
+            white
         )
     );
     

@@ -53,3 +53,7 @@ float BoundingBox::intersects(const Ray& ray) const {
 Point3 BoundingBox::getCenter() const {
     return center;
 }
+
+Vec3 BoundingBox::getHalfSize() const {
+    return halfSize;
+}

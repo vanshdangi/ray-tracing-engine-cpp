@@ -10,6 +10,7 @@ public:
     BoundingBox(Point3 min, Point3 max);
     float intersects(const Ray& ray) const;
     Point3 getCenter() const;
+    Vec3 getHalfSize() const;
 
 private:
     Point3 center = Point3(0, 0, 0);

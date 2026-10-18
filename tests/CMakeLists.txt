@@ -77,6 +77,11 @@ add_ray_tracing_engine_test(
     ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
 add_ray_tracing_engine_test(
+    BoundingBoxTest
+    objects/boundingBoxTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/bvh/boundingBox.cpp
+)
+add_ray_tracing_engine_test(
     TriangleTest
     objects/triangleTests.cpp
     ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
