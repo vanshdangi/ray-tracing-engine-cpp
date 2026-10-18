@@ -3,6 +3,7 @@
 #include <rendering/renderer.hpp>
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
+#include <world/objects/mesh.hpp>
 #include <thread>
 
 Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_)
@@ -80,14 +81,14 @@ Color Renderer::traceRay(const Ray& ray, int depth) const {
         return calculateBackground(ray);
     }
 
-    Color local = calculateLighting(*hit);
+    Color local = calculateLighting(*hit, ray);
 
-    if (depth >= maxReflectionDepth) {
+    const float reflectivity = hit->intersection.object->getMaterial().reflectivity;
+    if (depth >= maxReflectionDepth || reflectivity <= 0.0f) {
         return local;
     }
 
     Color reflectedColor = calculateReflection(ray, *hit, depth);
-    float reflectivity = hit->intersection.object->getMaterial().reflectivity;
     return local * (1 - reflectivity) + reflectedColor * reflectivity;
 }
 
@@ -116,12 +117,23 @@ Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int de
     return traceRay(reflectedRay, depth + 1);
 }
 
-Color Renderer::calculateLighting(const HitRecord& hit) const {
+Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
     Color lDiffuse;
 
     // Lighting Calculation
     Color kd = hit.intersection.object->getMaterial().albedo;
     Vec3 normal = hit.normal;
+    if (const auto* mesh = dynamic_cast<const Mesh*>(hit.intersection.object)) {
+        normal = mesh->getShadingNormal(hit.intersection);
+    }
+
+    // Orient the shading normal against the incoming ray.
+    if (normal.dot(ray.direction) > 0.0f) {
+        normal.x = -normal.x;
+        normal.y = -normal.y;
+        normal.z = -normal.z;
+    }
+
     float diffuseFactor = light.intensity * std::max(0.0f, normal.dot((light.position - hit.point).normalized()));
 
     // Shadow

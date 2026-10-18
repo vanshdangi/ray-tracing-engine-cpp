@@ -18,6 +18,8 @@ public:
     Vec3 transformNormal(const Vec3& localNormal) const;
     void addTriangle(Point3 A, Point3 B, Point3 C);
 
+    Vec3 getShadingNormal(const Intersection& hit) const;
+    Point2 getTexCoord(const Intersection& hit) const;
 private:
     Transform transform;
     OBJData data;

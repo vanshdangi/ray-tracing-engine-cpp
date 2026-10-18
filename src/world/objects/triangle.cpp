@@ -16,7 +16,8 @@ Intersection Triangle::intersects(const Ray& ray) const {
     Vec3 E2 = (C - A);
     Vec3 T = ray.origin - A;
     float det = E1.dot(ray.direction.cross(E2));
-    if(std::abs(det) < 1e-5f) {
+    float scale = E1.magnitude() * E2.magnitude() * ray.direction.magnitude();
+    if (std::abs(det) <= 1e-8f * scale) {   // relative, scale-invariant
         return {-1, this};
     }
 
@@ -36,7 +37,7 @@ Intersection Triangle::intersects(const Ray& ray) const {
         return {-1, this};
     }
 
-    return {t, this};
+    return {t, this, this, u, v};
 }
 
 Vec3 Triangle::getNormal(const Point3& point) const {

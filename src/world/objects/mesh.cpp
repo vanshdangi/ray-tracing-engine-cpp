@@ -4,7 +4,7 @@
 #include <maths/matrix4.hpp>
 #include <algorithm>
 
-Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_), transform(transform_), data(data_), triangles(data.triangles) {
+Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_), transform(transform_), data(std::move(data_)), triangles(data.triangles) {
     std::cout << "Total Triangles: " << triangles.size() << '\n';
 
     // Create BVH
@@ -119,6 +119,8 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
     if (!node->triangles.empty()) {
         float closestT = std::numeric_limits<float>::infinity();
         const Triangle* closestObj = nullptr;
+        float closestU = 0.0f;
+        float closestV = 0.0f;
 
         for (const Triangle* triangle : node->triangles) {
             renderStats.recordTriangleTest();
@@ -127,13 +129,15 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
             if (intersection.t >= 0.0f && intersection.t < closestT) {
                 closestT = intersection.t;
                 closestObj = triangle;
+                closestU = intersection.u;
+                closestV = intersection.v;
             }
         }
 
         if (closestT == std::numeric_limits<float>::infinity()) {
             return {-1,nullptr, nullptr};
         }
-        return {closestT, this ,closestObj};
+        return {closestT, this, closestObj, closestU, closestV};
     }
 
     // if not leaf node
@@ -153,4 +157,66 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
             return rightHit;
         }
     }
+}
+
+Vec3 Mesh::getShadingNormal(const Intersection& hit) const {
+    const auto* triangle =
+        static_cast<const Triangle*>(hit.primitive);
+
+    const std::size_t index =
+        static_cast<std::size_t>(triangle - triangles.data());
+
+    const auto& corners = data.triangleIndices[index].vertices;
+
+    // If any normal is absent, fall back to the flat triangle normal.
+    if (corners[0].normal < 0 ||
+        corners[1].normal < 0 ||
+        corners[2].normal < 0) {
+        return transform.transformNormal(triangle->getNormal(Point3()));
+    }
+
+    const Vec3& nA = data.normals[corners[0].normal];
+    const Vec3& nB = data.normals[corners[1].normal];
+    const Vec3& nC = data.normals[corners[2].normal];
+
+    const float u = hit.u;
+    const float v = hit.v;
+    const float w = 1.0f - u - v;
+
+    Vec3 localNormal = (
+        nA * w +
+        nB * u +
+        nC * v
+    ).normalized();
+
+    return transform.transformNormal(localNormal).normalized();
+}
+
+Point2 Mesh::getTexCoord(const Intersection& hit) const {
+    const auto* triangle =
+        static_cast<const Triangle*>(hit.primitive);
+
+    const std::size_t index =
+        static_cast<std::size_t>(triangle - triangles.data());
+
+    const auto& corners = data.triangleIndices[index].vertices;
+
+    if (corners[0].texCoord < 0 ||
+        corners[1].texCoord < 0 ||
+        corners[2].texCoord < 0) {
+        return Point2(0.0f, 0.0f);
+    }
+
+    const Point2& uvA = data.texCoords[corners[0].texCoord];
+    const Point2& uvB = data.texCoords[corners[1].texCoord];
+    const Point2& uvC = data.texCoords[corners[2].texCoord];
+
+    const float u = hit.u;
+    const float v = hit.v;
+    const float w = 1.0f - u - v;
+
+    return Point2(
+        w * uvA.x + u * uvB.x + v * uvC.x,
+        w * uvA.y + u * uvB.y + v * uvC.y
+    );
 }

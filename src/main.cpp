@@ -49,7 +49,7 @@ Scene createDemoScene() {
     OBJData data = parser.parser("objects/suzanne.obj");
     
     Transform meshTransform(
-        Point3(0.0f, 0.0f, 10.0f),
+        Point3(0.0f, 0.0f, 4.0f),
         Vec3(0.0f, 180.0f, 0.0f),
         Vec3(2.0f, 2.0f, 2.0f)
     );
@@ -111,7 +111,7 @@ int main()
         HEIGHT
     );
     PointLight light(
-        Point3(0.0f, 5.0f, 2.0f),
+        Point3(0.0f, 5.0f, -2.0f),
         0.005f,
         Color(255, 255, 255)
     );

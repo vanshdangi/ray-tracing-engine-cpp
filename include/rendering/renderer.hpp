@@ -1,6 +1,7 @@
 #pragma once
 #include <core/image.hpp>
 #include <core/ray.hpp>
+#include <maths/point2.hpp>
 #include <rendering/camera.hpp>
 #include <world/scene.hpp>
 #include <world/lighting.hpp>
@@ -15,7 +16,7 @@ public:
     Color traceRay(const Ray& ray, int depth) const;
     std::optional<HitRecord> findClosestHit(const Ray& ray) const;
     Color calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const;
-    Color calculateLighting(const HitRecord& hit) const;
+    Color calculateLighting(const HitRecord& hit, const Ray& ray) const;
     Color calculateBackground(const Ray& ray) const;
 private:
     const Camera& cam;
