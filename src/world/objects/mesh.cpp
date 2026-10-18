@@ -30,9 +30,6 @@ Vec3 Mesh::transformNormal(const Vec3& localNormal) const {
     return transform.transformNormal(localNormal);
 }
 
-void Mesh::addTriangle(Point3 A, Point3 B, Point3 C) {
-    triangles.emplace_back(Triangle(A, B, C, getMaterial()));
-}
 
 std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
     if (triangles.empty()) return nullptr;

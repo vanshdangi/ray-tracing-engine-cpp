@@ -17,7 +17,7 @@ Intersection Triangle::intersects(const Ray& ray) const {
     Vec3 T = ray.origin - A;
     float det = E1.dot(ray.direction.cross(E2));
     float scale = E1.magnitude() * E2.magnitude() * ray.direction.magnitude();
-    if (std::abs(det) <= 1e-8f * scale) {   // relative, scale-invariant
+    if (std::abs(det) <= 1e-8f * scale) {
         return {-1, this};
     }
 
