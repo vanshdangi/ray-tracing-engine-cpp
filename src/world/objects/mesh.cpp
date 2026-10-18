@@ -156,7 +156,7 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
     }
 }
 
-Vec3 Mesh::getShadingNormal(const Intersection& hit) const {
+Vec3 Mesh::getShadingNormal(const Intersection& hit, const Point3&) const {
     const auto* triangle =
         static_cast<const Triangle*>(hit.primitive);
 
@@ -189,7 +189,7 @@ Vec3 Mesh::getShadingNormal(const Intersection& hit) const {
     return transform.transformNormal(localNormal).normalized();
 }
 
-Point2 Mesh::getTexCoord(const Intersection& hit) const {
+Point2 Mesh::getTextCoords(const Intersection& hit) const {
     const auto* triangle =
         static_cast<const Triangle*>(hit.primitive);
 

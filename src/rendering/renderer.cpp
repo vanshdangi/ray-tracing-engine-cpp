@@ -3,7 +3,6 @@
 #include <rendering/renderer.hpp>
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
-#include <world/objects/mesh.hpp>
 #include <thread>
 
 Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_)
@@ -122,22 +121,17 @@ Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
 
     // Lighting Calculation
     Color kd = hit.intersection.object->getMaterial().albedo;
-    Vec3 normal = hit.normal;
-    if (const auto* mesh = dynamic_cast<const Mesh*>(hit.intersection.object)) {
-        normal = mesh->getShadingNormal(hit.intersection);
-    }
+    Vec3 geometricNormal = hit.intersection.object->getShadingNormal(hit.intersection, hit.point);
 
     // Orient the shading normal against the incoming ray.
-    if (normal.dot(ray.direction) > 0.0f) {
-        normal.x = -normal.x;
-        normal.y = -normal.y;
-        normal.z = -normal.z;
+    if (geometricNormal.dot(ray.direction) > 0.0f) {
+        geometricNormal = geometricNormal * -1.0f;
     }
 
-    float diffuseFactor = light.intensity * std::max(0.0f, normal.dot((light.position - hit.point).normalized()));
+    float diffuseFactor = light.intensity * std::max(0.0f, geometricNormal.dot((light.position - hit.point).normalized()));
 
     // Shadow
-    Point3 shadowPoint = hit.point + hit.normal*(1e-5);
+    Point3 shadowPoint = hit.point + geometricNormal*(1e-5);
     Ray shadowRay;
     shadowRay.origin = shadowPoint;
     shadowRay.direction = (light.position - hit.point).normalized();

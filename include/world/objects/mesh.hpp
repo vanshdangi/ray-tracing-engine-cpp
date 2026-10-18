@@ -17,8 +17,8 @@ public:
     Vec3 getNormal(const Point3& Point) const;
     Vec3 transformNormal(const Vec3& localNormal) const;
 
-    Vec3 getShadingNormal(const Intersection& hit) const;
-    Point2 getTexCoord(const Intersection& hit) const;
+    Vec3 getShadingNormal(const Intersection& hit, const Point3& point) const override;
+    Point2 getTextCoords(const Intersection& hit) const override;
 private:
     Transform transform;
     OBJData data;
