@@ -38,6 +38,17 @@ add_executable(ray_tracing_engine
     ${SOURCES}
 )
 
+# ------------ Compiler Warnings ------------
+if(MSVC)
+    target_compile_options(ray_tracing_engine PRIVATE /W4)
+else()
+    target_compile_options(ray_tracing_engine PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+    )
+endif()
+
 # ---------------- Includes ----------------
 target_include_directories(ray_tracing_engine
     PRIVATE

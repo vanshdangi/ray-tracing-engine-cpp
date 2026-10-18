@@ -96,11 +96,50 @@ The current implementation uses median splitting along the longest axis of a nod
 
 ## Building and Running
 
-A C++ compiler and SFML 3 are required.
+### Requirements
 
-Use the project's included build configuration to compile the executable and ensure SFML is correctly configured and linked. Launch the application to render the configured scene.
+- C++ compiler supporting the C++ standard specified in `CMakeLists.txt`
+- CMake
+- SFML 3
 
-<!-- Add the exact build and run commands for your repository here. -->
+### Windows
+
+Install a compatible C++ compiler and SFML 3, then configure and build using CMake.
+
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+Run the generated executable from the appropriate configuration directory.
+
+### Linux
+
+Install a C++ compiler, CMake, and SFML 3 using your distribution's package manager.
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+Run the generated executable from the build directory.
+
+### macOS
+
+Install Xcode Command Line Tools, CMake, and SFML 3. If using Homebrew, install the required dependencies first.
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+Run the generated executable from the build directory.
+
+### Notes
+
+- Ensure CMake can locate SFML 3 on your system.
+- The exact executable location depends on your platform, generator, and CMake target configuration.
+- For debugging, configure a Debug build instead of Release.
 
 ## Project Goals
 
