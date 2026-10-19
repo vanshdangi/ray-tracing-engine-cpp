@@ -5,25 +5,30 @@ A CPU-based 3D ray tracing engine built from scratch in C++, featuring geometric
 The project explores the fundamentals of 3D rendering, geometric intersection algorithms, spatial acceleration structures, and performance optimization.
 
 ## Showcase
+
 ![Ray Tracing Engine — Stanford Bunny](images/stanford-bunny.png)
+
 ![Ray Tracing Engine — Reflections](images/reflections.png)
 
 ## Features
 
 ### Rendering
+
 - **Ray tracing:** Casts rays through the scene to calculate pixel colors.
 - **Camera:** Perspective camera with configurable position, orientation, field of view, and aspect ratio.
 - **Geometric primitives:** Sphere, plane, triangle, and axis-aligned bounding box.
 - **Triangle meshes:** Supports rendering complex 3D models composed of triangles.
-- **OBJ loading:** Loads triangle mesh geometry from Wavefront OBJ files.
+- **OBJ loading:** Loads triangle mesh geometry from Wavefront OBJ files, including vertex normals and texture coordinates.
 - **Object transformations:** Supports translation, rotation, and scaling using transformation matrices.
-- **Lighting:** Point lights with direct Lambertian diffuse shading.
+- **Lighting:** Point lights with direct Lambertian diffuse shading and ambient lighting.
 - **Shadows:** Hard shadows calculated using shadow rays.
 - **Reflections:** Supports reflective ray tracing.
 - **Background:** Gradient background shading.
 - **Supersampling:** Supports multiple samples per pixel to improve image quality.
+- **Color pipeline:** Uses linear RGB internally and converts to sRGB for final output.
 
 ### Performance
+
 - **Bounding Volume Hierarchy (BVH):** Accelerates mesh intersection queries using a recursively constructed, median-split hierarchy of axis-aligned bounding boxes.
 - **Performance instrumentation:** Tracks render time, rays traced, shadow rays, triangle intersection tests, and rendering throughput.
 - **Benchmarking:** Measures the impact of BVH acceleration against brute-force triangle intersection testing.
@@ -34,9 +39,15 @@ The project explores the fundamentals of 3D rendering, geometric intersection al
 
 ### BVH acceleration: Before vs. After
 
-The following benchmark uses the same scene and rendering settings with brute-force mesh intersection testing and BVH-accelerated intersection testing.
+The following benchmark compares brute-force mesh intersection testing with BVH-accelerated intersection testing using the same scene and rendering settings.
 
 **Test configuration**
+
+- Build configuration: Release
+- CPU: Intel Core i7-12700F (12 cores, 20 logical processors)
+- Compiler: MSVC 19.38.33135
+- Build system: CMake + Visual Studio 2022 (MSBuild)
+- Target architecture: x64
 - Resolution: 800 × 600
 - Sampling: 16 samples per pixel (4 × 4 grid)
 - Scene: Suzanne mesh containing 968 triangles and a plane
@@ -44,25 +55,27 @@ The following benchmark uses the same scene and rendering settings with brute-fo
 
 | Metric | Before BVH | After BVH |
 |---|---:|---:|
-| Render time | 426.053 s | 13.533 s |
+| Render time | 199.992 s | 1.974 s |
 | Pixels rendered | 480,000 | 480,000 |
 | Primary rays | 7,680,000 | 7,680,000 |
-| Rays traced | 12,029,500 | 12,029,500 |
-| Shadow rays | 4,371,233 | 4,371,233 |
-| Triangle intersection tests | 15,875,909,544 | 26,775,562 |
-| Pixels per second | 1,126.62 | 35,469 |
-| Rays per second | 28,234.8 | 888,904 |
-| Triangle tests per primary ray | 2,067.18 | 3.4864 |
+| Rays traced | 7,680,000 | 7,680,000 |
+| Shadow rays | 4,641,906 | 4,641,906 |
+| Triangle intersection tests | 11,927,605,008 | 75,125,291 |
+| Pixels per second | 2,400.1 | 243,133 |
+| Rays per second | 38,401.6 | 3,890,130 |
+| Triangle tests per primary ray | 1,553.07 | 9.78194 |
 
 ### Results
 
-- **31.48× faster rendering** on the benchmark scene.
-- **96.82% reduction** in render time.
-- **99.83% fewer triangle intersection tests.**
+- **101.30× faster rendering** on the benchmark scene.
+- **99.01% reduction** in render time.
+- **99.37% fewer triangle intersection tests.**
 
 The original implementation tested mesh triangles using brute force. With BVH acceleration, rays first test bounding boxes and only traverse relevant branches of the hierarchy. Triangle intersection tests are performed at leaf nodes rather than against every triangle in the mesh.
 
-This substantially reduces unnecessary geometric intersection calculations as mesh complexity increases.
+In this benchmark, BVH acceleration reduced triangle intersection tests from approximately 11.93 billion to 75.13 million while rendering the same number of pixels and tracing the same number of primary and shadow rays.
+
+This substantially reduces unnecessary geometric intersection calculations and makes rendering complex meshes far more practical.
 
 *Benchmark results are from the recorded runs and may vary with hardware, compiler settings, and system load.*
 
@@ -160,7 +173,6 @@ Key areas of focus include:
 - Lighting, shadows, and reflections.
 - Recursive spatial acceleration structures.
 - Performance measurement and optimization.
-
 
 ## License
 
