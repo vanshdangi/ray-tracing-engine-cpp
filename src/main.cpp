@@ -16,6 +16,7 @@
 #include <world/objects/triangle.hpp>
 #include <world/objects/mesh.hpp>
 #include <parser/objParser.hpp>
+#include <core/colorUtils.hpp>
 #include <memory>
 
 Scene createDemoScene() {
@@ -23,19 +24,19 @@ Scene createDemoScene() {
     
     // Materials
     Material red;
-    red.albedo = Color(200, 50, 50);
+    red.albedo = Color::fromSrgb(0.784f, 0.196f, 0.196f);
     
     Material green;
-    green.albedo = Color(50, 200, 80);
+    green.albedo = Color::fromSrgb(0.196f, 0.784f, 0.314f);
     
     Material blue;
-    blue.albedo = Color(50, 100, 220);
+    blue.albedo = Color::fromSrgb(0.196f, 0.392f, 0.863f);
     
     Material yellow;
-    yellow.albedo = Color(220, 200, 50);
+    yellow.albedo = Color::fromSrgb(0.863f, 0.784f, 0.196f);
 
     Material white;
-    white.albedo = Color(255, 255, 255);
+    white.albedo = Color(1.0f, 1.0f, 1.0f);
 
     Material mirror;
     mirror.reflectivity = 1.0f;
@@ -112,8 +113,8 @@ int main()
     );
     PointLight light(
         Point3(0.0f, 5.0f, -2.0f),
-        0.005f,
-        Color(255, 255, 255)
+        1.275f,
+        Color(1.0f, 1.0f, 1.0f)
     );
 
     Image img(WIDTH, HEIGHT);
@@ -145,9 +146,9 @@ int main()
             sfImage.setPixel(
                 {x, y},
                 sf::Color(
-                    static_cast<std::uint8_t>(color.r),
-                    static_cast<std::uint8_t>(color.g),
-                    static_cast<std::uint8_t>(color.b)
+                    toSrgbByte(color.r),
+                    toSrgbByte(color.g),
+                    toSrgbByte(color.b)
                 )
             );
         }

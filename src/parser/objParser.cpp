@@ -120,7 +120,7 @@ OBJData OBJParser::parser(const std::string& filename) {
 
     Material mat;
     // Temporary material until MTL loading is implemented.
-    mat.albedo = Color(200, 50, 50);
+    mat.albedo = Color::fromSrgb(0.784f, 0.196f, 0.196f);
 
     std::string line;
     std::size_t lineNumber = 0;

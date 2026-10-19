@@ -63,9 +63,9 @@ void Renderer::renderRows(size_t startY, size_t endY) {
             finalColor /= 16.0f;
 
             // clamp
-            finalColor.r = std::min(255.0f, std::max(0.0f, finalColor.r));
-            finalColor.g = std::min(255.0f, std::max(0.0f, finalColor.g));
-            finalColor.b = std::min(255.0f, std::max(0.0f, finalColor.b));
+            finalColor.r = std::min(1.0f, std::max(0.0f, finalColor.r));
+            finalColor.g = std::min(1.0f, std::max(0.0f, finalColor.g));
+            finalColor.b = std::min(1.0f, std::max(0.0f, finalColor.b));
 
             img.setPixel(x, y, finalColor);
         }
@@ -112,15 +112,13 @@ std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
 Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const {
     Ray reflectedRay;
     reflectedRay.direction = ray.direction - hit.normal*(2*(ray.direction.dot(hit.normal)));
-    reflectedRay.origin = hit.point + hit.normal*(1e-5);
+    reflectedRay.origin = hit.point + hit.normal*(1e-5f);
     return traceRay(reflectedRay, depth + 1);
 }
 
 Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
-    Color lDiffuse;
-
-    // Lighting Calculation
     Color kd = hit.intersection.object->getMaterial().albedo;
+
     Vec3 geometricNormal = hit.intersection.object->getShadingNormal(hit.intersection, hit.point);
 
     // Orient the shading normal against the incoming ray.
@@ -128,41 +126,62 @@ Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
         geometricNormal = geometricNormal * -1.0f;
     }
 
-    float diffuseFactor = light.intensity * std::max(0.0f, geometricNormal.dot((light.position - hit.point).normalized()));
+    // Ambient lighting (constant diffuse fill).
+    constexpr float ambientIntensity = 0.15f;
+
+    Color ambient(
+        kd.r * ambientIntensity,
+        kd.g * ambientIntensity,
+        kd.b * ambientIntensity
+    );
+
+    // Direct lighting.
+    Vec3 toLight = light.position - hit.point;
+    float lightDistance = toLight.magnitude();
+    Vec3 lightDirection = toLight.normalized();
+
+    float diffuseFactor = light.intensity * std::max(0.0f, geometricNormal.dot(lightDirection));
 
     // Shadow
-    Point3 shadowPoint = hit.point + geometricNormal*(1e-5);
+    Point3 shadowPoint = hit.point + geometricNormal * 1e-5f;
+
     Ray shadowRay;
     shadowRay.origin = shadowPoint;
-    shadowRay.direction = (light.position - hit.point).normalized();
+    shadowRay.direction = lightDirection;
+
     renderStats.recordShadowRay();
 
     bool inShadow = false;
-    for(const auto& obj : scene.getObjects()) {
-        Intersection interseciton = obj->intersects(shadowRay);
-        if(interseciton.t != -1 && interseciton.t < (light.position - hit.point).magnitude()) {
+
+    for (const auto& obj : scene.getObjects()) {
+        Intersection intersection = obj->intersects(shadowRay);
+
+        if (intersection.t > 0.0f &&
+            intersection.t < lightDistance) {
             inShadow = true;
             break;
         }
     }
 
-    if(inShadow) {
-        lDiffuse *= 0;
-    } else {
-        lDiffuse.r = kd.r * light.color.r * diffuseFactor;
-        lDiffuse.g = kd.g * light.color.g * diffuseFactor;
-        lDiffuse.b = kd.b * light.color.b * diffuseFactor;
+    Color direct(0.0f, 0.0f, 0.0f);
+
+    if (!inShadow) {
+        direct = Color(
+            kd.r * light.color.r * diffuseFactor,
+            kd.g * light.color.g * diffuseFactor,
+            kd.b * light.color.b * diffuseFactor
+        );
     }
 
-    return lDiffuse;
+    return ambient + direct;
 }
 
 Color Renderer::calculateBackground(const Ray& ray) const {
     Color lDiffuse;
 
-    Color top(70, 150, 220);
-    Color horizon(210, 235, 245);
-    Color ground(95, 90, 85);
+    Color top = Color::fromSrgb(0.275f, 0.588f, 0.863f);
+    Color horizon = Color::fromSrgb(0.824f, 0.922f, 0.961f);
+    Color ground = Color::fromSrgb(0.373f, 0.353f, 0.333f);
 
     if (ray.direction.y > 0.0f) {
         float t = ray.direction.y;

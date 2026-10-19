@@ -8,10 +8,10 @@ Color Image::getPixel(int x, int y) const {
     return pixels[y*width + x];
 }
 
-float Image::getWidth() const {
+int Image::getWidth() const {
     return width;
 }
 
-float Image::getHeight() const {
+int Image::getHeight() const {
     return height;
 }

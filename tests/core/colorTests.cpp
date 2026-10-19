@@ -2,34 +2,47 @@
 #include <core/color.hpp>
 
 TEST(ColorTest, Addition) {
-    EXPECT_EQ(Color(1.0f, 2.0f, 3.0f) + Color(4.0f, 5.0f, 6.0f),
-              Color(5.0f, 7.0f, 9.0f));
+    const Color result = Color(0.1f, 0.2f, 0.3f) + Color(0.4f, 0.5f, 0.6f);
+
+    EXPECT_NEAR(result.r, 0.5f, 0.000001f);
+    EXPECT_NEAR(result.g, 0.7f, 0.000001f);
+    EXPECT_NEAR(result.b, 0.9f, 0.000001f);
 }
 
 TEST(ColorTest, Subtraction) {
-    EXPECT_EQ(Color(4.0f, 5.0f, 6.0f) - Color(1.0f, 2.0f, 3.0f),
-              Color(3.0f, 3.0f, 3.0f));
+    EXPECT_EQ(Color(0.8f, 0.7f, 0.6f) - Color(0.1f, 0.2f, 0.3f),
+              Color(0.7f, 0.5f, 0.3f));
 }
 
 TEST(ColorTest, ScalarOperations) {
-    Color color(1.0f, 2.0f, 3.0f);
+    Color color(0.1f, 0.2f, 0.3f);
 
-    EXPECT_EQ(color * 2.0f, Color(2.0f, 4.0f, 6.0f));
-    EXPECT_EQ(color / 2.0f, Color(0.5f, 1.0f, 1.5f));
+    EXPECT_EQ(color * 2.0f, Color(0.2f, 0.4f, 0.6f));
+    EXPECT_EQ(color / 2.0f, Color(0.05f, 0.1f, 0.15f));
 }
 
 TEST(ColorTest, CompoundOperations) {
-    Color color(1.0f, 2.0f, 3.0f);
+    Color color(0.1f, 0.2f, 0.3f);
 
-    color += Color(4.0f, 5.0f, 6.0f);
-    EXPECT_EQ(color, Color(5.0f, 7.0f, 9.0f));
+    color += Color(0.4f, 0.5f, 0.6f);
+    EXPECT_NEAR(color.r, 0.5f, 0.000001f);
+    EXPECT_NEAR(color.g, 0.7f, 0.000001f);
+    EXPECT_NEAR(color.b, 0.9f, 0.000001f);
 
-    color -= Color(1.0f, 2.0f, 3.0f);
-    EXPECT_EQ(color, Color(4.0f, 5.0f, 6.0f));
+    color -= Color(0.1f, 0.2f, 0.3f);
+    EXPECT_EQ(color, Color(0.4f, 0.5f, 0.6f));
 
     color *= 2.0f;
-    EXPECT_EQ(color, Color(8.0f, 10.0f, 12.0f));
+    EXPECT_EQ(color, Color(0.8f, 1.0f, 1.2f));
 
     color /= 2.0f;
-    EXPECT_EQ(color, Color(4.0f, 5.0f, 6.0f));
+    EXPECT_EQ(color, Color(0.4f, 0.5f, 0.6f));
+}
+
+TEST(ColorTest, FromSrgbConvertsChannelsToLinear) {
+    const Color color = Color::fromSrgb(0.5f, 0.04045f, 1.0f);
+
+    EXPECT_NEAR(color.r, 0.214041f, 0.000001f);
+    EXPECT_NEAR(color.g, 0.003131f, 0.000001f);
+    EXPECT_FLOAT_EQ(color.b, 1.0f);
 }
