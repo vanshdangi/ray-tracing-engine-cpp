@@ -141,6 +141,14 @@ Run the generated executable from the build directory.
 - The exact executable location depends on your platform, generator, and CMake target configuration.
 - For debugging, configure a Debug build instead of Release.
 
+## Running Tests
+
+Execute the complete test suite:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
 ## Project Goals
 
 This project was developed to explore and implement the fundamentals of a ray tracing renderer, with an emphasis on understanding the underlying mathematics and algorithms rather than relying entirely on a prebuilt rendering framework.

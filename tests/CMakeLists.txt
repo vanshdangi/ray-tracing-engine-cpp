@@ -87,10 +87,47 @@ add_ray_tracing_engine_test(
     ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
     ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
+add_ray_tracing_engine_test(
+    MeshTest
+    objects/meshTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/objects/mesh.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
+    ${PROJECT_SOURCE_DIR}/src/bvh/boundingBox.cpp
+    ${PROJECT_SOURCE_DIR}/src/render_stats.cpp
+)
 
 #Rendering
 add_ray_tracing_engine_test(
     Cameratest
     rendering/cameraTests.cpp
     ${PROJECT_SOURCE_DIR}/src/rendering/camera.cpp
+)
+add_ray_tracing_engine_test(
+    RendererTest
+    rendering/rendererTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/rendering/renderer.cpp
+    ${PROJECT_SOURCE_DIR}/src/rendering/camera.cpp
+    ${PROJECT_SOURCE_DIR}/src/core/image.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/scene.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/hitRecord.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/lighting.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/objects/sphere.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
+    ${PROJECT_SOURCE_DIR}/src/render_stats.cpp
+)
+
+#Parser
+add_ray_tracing_engine_test(
+    OBJParserTest
+    parser/objParserTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/parser/objParser.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/objects/triangle.cpp
+)
+
+#World
+add_ray_tracing_engine_test(
+    TransformTest
+    world/transformTests.cpp
+    ${PROJECT_SOURCE_DIR}/src/world/transform.cpp
 )
