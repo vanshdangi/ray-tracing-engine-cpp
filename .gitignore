@@ -8,7 +8,9 @@
 *.slo
 *.lo
 *.o
-*.obj
+
+# Local-only models
+objects/local/
 
 # Precompiled Headers
 *.gch
