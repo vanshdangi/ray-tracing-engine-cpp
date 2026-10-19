@@ -52,7 +52,8 @@ void Renderer::renderRows(size_t startY, size_t endY) {
             Color finalColor;
 
             for (size_t i = 0; i < 16; ++i) {
-                Ray ray = cam.generateRay(x, y, sampleX[i], sampleY[i]);
+                Ray ray = cam.generateRay(
+                    static_cast<int>(x), static_cast<int>(y), sampleX[i], sampleY[i]);
                 renderStats.recordPrimaryRay();
                 Color sampleColor = traceRay(ray, 0);
                 finalColor += sampleColor;
@@ -67,7 +68,7 @@ void Renderer::renderRows(size_t startY, size_t endY) {
             finalColor.g = std::min(1.0f, std::max(0.0f, finalColor.g));
             finalColor.b = std::min(1.0f, std::max(0.0f, finalColor.b));
 
-            img.setPixel(x, y, finalColor);
+            img.setPixel(static_cast<int>(x), static_cast<int>(y), finalColor);
         }
     }
 }
@@ -119,11 +120,11 @@ Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int de
 Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
     Color kd = hit.intersection.object->getMaterial().albedo;
 
-    Vec3 geometricNormal = hit.intersection.object->getShadingNormal(hit.intersection, hit.point);
+    Vec3 normal = hit.intersection.object->getShadingNormal(hit.intersection, hit.point);
 
     // Orient the shading normal against the incoming ray.
-    if (geometricNormal.dot(ray.direction) > 0.0f) {
-        geometricNormal = geometricNormal * -1.0f;
+    if (normal.dot(ray.direction) > 0.0f) {
+        normal = normal * -1.0f;
     }
 
     // Ambient lighting (constant diffuse fill).
@@ -140,10 +141,10 @@ Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
     float lightDistance = toLight.magnitude();
     Vec3 lightDirection = toLight.normalized();
 
-    float diffuseFactor = light.intensity * std::max(0.0f, geometricNormal.dot(lightDirection));
+    float diffuseFactor = light.intensity * std::max(0.0f, normal.dot(lightDirection));
 
     // Shadow
-    Point3 shadowPoint = hit.point + geometricNormal * 1e-5f;
+    Point3 shadowPoint = hit.point + normal * 1e-5f;
 
     Ray shadowRay;
     shadowRay.origin = shadowPoint;
