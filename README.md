@@ -111,7 +111,7 @@ The current implementation uses median splitting along the longest axis of a nod
 
 ### Requirements
 
-- C++ compiler supporting the C++ standard specified in `CMakeLists.txt`
+- A C++ compiler supporting the C++ standard specified in `CMakeLists.txt`
 - CMake
 - SFML 3
 
@@ -124,8 +124,6 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
-Run the generated executable from the appropriate configuration directory.
-
 ### Linux
 
 Install a C++ compiler, CMake, and SFML 3 using your distribution's package manager.
@@ -134,8 +132,6 @@ Install a C++ compiler, CMake, and SFML 3 using your distribution's package mana
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
-
-Run the generated executable from the build directory.
 
 ### macOS
 
@@ -146,13 +142,51 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-Run the generated executable from the build directory.
+### Selecting a Scene
 
-### Notes
+The engine supports multiple demo scenes, selectable using the `--scene` argument.
 
-- Ensure CMake can locate SFML 3 on your system.
-- The exact executable location depends on your platform, generator, and CMake target configuration.
-- For debugging, configure a Debug build instead of Release.
+| Scene | Description |
+|---|---|
+| `bunny` | Stanford Bunny mesh showcase |
+| `reflections` | Demonstrates recursive reflections |
+| `benchmark` | Suzanne mesh benchmark scene |
+
+If no scene is specified, `benchmark` is used by default.
+
+### Saving the Render
+
+Rendered images are automatically saved as PNG files. Use `--output` to specify the output filename. If omitted, the image is saved as `render.png`.
+
+### Running the Engine
+
+Run the executable from the repository root so that the model paths resolve correctly.
+
+**Windows (PowerShell)**
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene bunny --output bunny.png
+.\build\Release\ray_tracing_engine.exe --scene reflections --output reflections.png
+.\build\Release\ray_tracing_engine.exe --scene benchmark --output benchmark.png
+```
+
+**Linux**
+
+```bash
+./build/ray_tracing_engine --scene bunny --output bunny.png
+./build/ray_tracing_engine --scene reflections --output reflections.png
+./build/ray_tracing_engine --scene benchmark --output benchmark.png
+```
+
+**macOS**
+
+```bash
+./build/ray_tracing_engine --scene bunny --output bunny.png
+./build/ray_tracing_engine --scene reflections --output reflections.png
+./build/ray_tracing_engine --scene benchmark --output benchmark.png
+```
+
+The executable displays the rendered image in an SFML window and saves it to the specified PNG file.
 
 ## Running Tests
 

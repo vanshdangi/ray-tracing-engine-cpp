@@ -6,14 +6,14 @@ Camera::Camera(Point3 position_,
     Vec3 direction_,
     float fov_,
     float aspectRatio_,
-    float imageWidth_,
-    float imageHeight_
+    unsigned int imageWidth_,
+    unsigned int imageHeight_
 ) : position(position_),
  direction(direction_),
  fov(fov_),
  aspectRatio(aspectRatio_),
- imageWidth(imageWidth_),
- imageHeight(imageHeight_) {
+ imageWidth(static_cast<float>(imageWidth_)),
+ imageHeight(static_cast<float>(imageHeight_)) {
 
     forward = direction.normalized();
     Vec3 worldUp(0.0f, 1.0f, 0.0f);

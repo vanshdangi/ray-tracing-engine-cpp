@@ -9,8 +9,8 @@ public:
         Vec3 direction_,
         float fov_,
         float aspectRatio_,
-        float imageWidth_,
-        float imageHeight_);
+        unsigned int imageWidth_,
+        unsigned int imageHeight_);
     Ray generateRay(int pixelX, int pixelY, float sampleX, float sampleY) const;
 
 private:

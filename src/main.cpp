@@ -1,125 +1,64 @@
 #include <iostream>
+#include <memory>
 #include <SFML/Graphics.hpp>
 #include <render_stats.hpp>
-#include <core/ray.hpp>
-#include <rendering/camera.hpp>
-#include <maths/point3.hpp>
-#include <maths/vec3.hpp>
 #include <core/image.hpp>
-#include <core/color.hpp>
 #include <rendering/renderer.hpp>
-#include <world/scene.hpp>
-#include <world/lighting.hpp>
-#include <world/objects/sphere.hpp>
-#include <world/objects/aabb.hpp>
-#include <world/objects/plane.hpp>
-#include <world/objects/triangle.hpp>
-#include <world/objects/mesh.hpp>
-#include <parser/objParser.hpp>
-#include <core/colorUtils.hpp>
-#include <memory>
+#include <scenes/demoScenes.hpp>
 
-Scene createDemoScene() {
-    Scene scene;
-    
-    // Materials
-    Material red;
-    red.albedo = Color::fromSrgb(0.784f, 0.196f, 0.196f);
-    
-    Material green;
-    green.albedo = Color::fromSrgb(0.196f, 0.784f, 0.314f);
-    
-    Material blue;
-    blue.albedo = Color::fromSrgb(0.196f, 0.392f, 0.863f);
-    
-    Material yellow;
-    yellow.albedo = Color::fromSrgb(0.863f, 0.784f, 0.196f);
-
-    Material white;
-    white.albedo = Color(1.0f, 1.0f, 1.0f);
-
-    Material mirror;
-    mirror.reflectivity = 1.0f;
-
-    // --------------------------------------------------
-    // Mesh
-    // --------------------------------------------------
-    
-    OBJParser parser;
-    
-    OBJData data = parser.parser("objects/suzanne.obj");
-    
-    Transform meshTransform(
-        Point3(0.0f, 0.0f, 4.0f),
-        Vec3(0.0f, 180.0f, 0.0f),
-        Vec3(2.0f, 2.0f, 2.0f)
-    );
-    
-    scene.addObject(
-        std::make_unique<Mesh>(
-            meshTransform,
-            data,
-            red
-        )
-    );
-    
-    
-    // --------------------------------------------------
-    // Plane
-    // --------------------------------------------------
-    
-    Transform planeTransform(
-        Point3(0.0f, -2.0f, 8.0f),
-        Vec3(0.0f, 0.0f, 0.0f),
-        Vec3(1.0f, 1.0f, 1.0f)
-    );
-    
-    scene.addObject(
-        std::make_unique<Plane>(
-            planeTransform,
-            Vec3(0.0f, 1.0f, 0.0f),
-            white
-        )
-    );
-    
-    
-
-    
-    return scene;
-    
-}
-
-
-int main()
+int main(int argc, char* argv[])
 {
-    //constexpr unsigned int WIDTH = 1440;
-    //constexpr unsigned int HEIGHT = 810;
-    constexpr unsigned int WIDTH = 800;
-    constexpr unsigned int HEIGHT = 600;
+    constexpr unsigned int WIDTH = 1440;
+    constexpr unsigned int HEIGHT = 810;
+    //constexpr unsigned int WIDTH = 800;
+    //constexpr unsigned int HEIGHT = 600;
 
     sf::RenderWindow window(
         sf::VideoMode({WIDTH, HEIGHT}),
         "Ray Tracing Engine"
     );
 
-    // DECLARATIONS
-    Camera mainCam(
-        Point3(0.0f, 0.0f, 0.0f),
-        Vec3(0.0f, 0.0f, 1.0f),
-        90.0f,
-        static_cast<float>(WIDTH) / HEIGHT,
-        WIDTH,
-        HEIGHT
-    );
-    PointLight light(
-        Point3(0.0f, 5.0f, -2.0f),
-        1.275f,
-        Color(1.0f, 1.0f, 1.0f)
-    );
+    std::string sceneName = "benchmark";
+    std::string pngName = "render.png";
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+
+        if (arg == "--scene") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --scene requires a scene name\n";
+                return 1;
+            }
+
+            sceneName = argv[++i];
+        } else if(arg == "--output") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --output requires a png name\n";
+                return 1;
+            }
+
+            pngName = argv[++i];
+        } else {
+            std::cerr << "Error: Unknown argument: " << arg << '\n';
+            return 1;
+        }
+    }
+
+    SceneConfig config = [&]() {
+        if (sceneName == "bunny")
+            return createBunnyScene(WIDTH, HEIGHT);
+
+        if (sceneName == "reflections")
+            return createReflectionsScene(WIDTH, HEIGHT);
+
+        if (sceneName == "benchmark")
+            return createBenchmarkScene(WIDTH, HEIGHT);
+
+        throw std::invalid_argument("Unknown scene: " + sceneName);
+    }();
 
     Image img(WIDTH, HEIGHT);
-    Scene scene = createDemoScene();
-    Renderer renderer(mainCam, img, scene, light);
+    Renderer renderer(config.camera, img, config.scene, config.light);
     renderer.render();
 
     const RenderStats::Snapshot stats = renderStats.snapshot();
@@ -152,6 +91,13 @@ int main()
                 )
             );
         }
+    }
+
+    // Save Image
+    if (!sfImage.saveToFile(pngName)) {
+        std::cerr << "Error: Failed to save image to "
+                << pngName << '\n';
+        return 1;
     }
 
     // Upload the image to the GPU.

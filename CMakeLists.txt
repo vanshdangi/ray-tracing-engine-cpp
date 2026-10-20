@@ -9,6 +9,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ---------------- Sources ----------------
 set(SOURCES
     src/main.cpp
+    
+    src/scenes/demoScenes.cpp
 
     src/render_stats.cpp
 
