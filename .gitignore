@@ -12,6 +12,9 @@
 # Local-only models
 objects/local/
 
+# Render output
+render.png
+
 # Precompiled Headers
 *.gch
 *.pch

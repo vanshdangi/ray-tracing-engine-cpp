@@ -78,3 +78,17 @@ TEST(MeshTest, ReturnsNearestHitFromOverlappingTriangles) {
     ASSERT_NE(hit.primitive, nullptr);
     EXPECT_EQ(hit.primitive->getA(), Point3(0.0f, 0.0f, 0.0f));
 }
+
+TEST(MeshTest, FindsNearestIntersectionWithoutBVH) {
+    Mesh mesh(translatedMeshTransform(), makeMeshData(), Material());
+    const Ray ray{Point3(8.25f, 0.25f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)};
+    Mesh::setBVHEnabled(false);
+
+    const Intersection hit = mesh.intersects(ray);
+
+    Mesh::setBVHEnabled(true);
+    EXPECT_FLOAT_EQ(hit.t, 2.0f);
+    EXPECT_EQ(hit.object, &mesh);
+    ASSERT_NE(hit.primitive, nullptr);
+    EXPECT_EQ(hit.primitive->getA(), Point3(8.0f, 0.0f, 0.0f));
+}

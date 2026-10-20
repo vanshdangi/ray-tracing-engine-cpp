@@ -14,6 +14,7 @@ class Mesh : public Object3D{
 public:
     Mesh(Transform transform_, OBJData data_, Material mat_);
     Intersection intersects(const Ray& ray) const;
+    static void setBVHEnabled(bool enabled) { bvhEnabled = enabled; }
     Vec3 getNormal(const Point3& Point) const;
     Vec3 transformNormal(const Vec3& localNormal) const;
 
@@ -26,6 +27,7 @@ private:
     std::vector<Triangle> triangles;
     std::unique_ptr<BVHNode> root;
     Vec3 normal;
+    inline static bool bvhEnabled = true;
 
     std::unique_ptr<BVHNode> buildBVH(std::vector<Triangle*>& triangles);
     Intersection traverseBVH(const BVHNode* node, const Ray& localRay) const;

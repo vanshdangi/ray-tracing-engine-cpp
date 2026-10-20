@@ -5,6 +5,7 @@
 #include <core/image.hpp>
 #include <rendering/renderer.hpp>
 #include <scenes/demoScenes.hpp>
+#include <world/objects/mesh.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -20,6 +21,7 @@ int main(int argc, char* argv[])
 
     std::string sceneName = "benchmark";
     std::string pngName = "render.png";
+    bool useBVH = true;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -38,11 +40,15 @@ int main(int argc, char* argv[])
             }
 
             pngName = argv[++i];
+        } else if (arg == "--no-bvh") {
+            useBVH = false;
         } else {
             std::cerr << "Error: Unknown argument: " << arg << '\n';
             return 1;
         }
     }
+
+    Mesh::setBVHEnabled(useBVH);
 
     SceneConfig config = [&]() {
         if (sceneName == "bunny")

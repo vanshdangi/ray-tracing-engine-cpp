@@ -154,6 +154,17 @@ The engine supports multiple demo scenes, selectable using the `--scene` argumen
 
 If no scene is specified, `benchmark` is used by default.
 
+### Benchmarking
+
+The `--no-bvh` argument disables BVH acceleration and uses brute-force triangle intersection testing instead. This allows you to compare rendering performance with and without BVH acceleration.
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --output bvh.png
+.\build\Release\ray_tracing_engine.exe --scene benchmark --no-bvh --output no-bvh.png
+```
+
+Run both commands with the same build configuration and scene settings for a meaningful comparison. The engine reports render time and triangle intersection statistics after rendering.
+
 ### Saving the Render
 
 Rendered images are automatically saved as PNG files. Use `--output` to specify the output filename. If omitted, the image is saved as `render.png`.

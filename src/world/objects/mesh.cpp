@@ -19,10 +19,34 @@ Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_),
 Intersection Mesh::intersects(const Ray& ray) const {
     Ray localRay = transform.toLocal(ray);
 
-    return traverseBVH(root.get(), localRay);
+    if (bvhEnabled) {
+        return traverseBVH(root.get(), localRay);
+    }
+
+    float closestT = std::numeric_limits<float>::infinity();
+    const Triangle* closestObj = nullptr;
+    float closestU = 0.0f;
+    float closestV = 0.0f;
+
+    for (const Triangle& triangle : triangles) {
+        renderStats.recordTriangleTest();
+
+        const Intersection intersection = triangle.intersects(localRay);
+        if (intersection.t >= 0.0f && intersection.t < closestT) {
+            closestT = intersection.t;
+            closestObj = &triangle;
+            closestU = intersection.u;
+            closestV = intersection.v;
+        }
+    }
+
+    if (closestObj == nullptr) {
+        return {-1.0f, nullptr, nullptr};
+    }
+    return {closestT, this, closestObj, closestU, closestV};
 }
 
-Vec3 Mesh::getNormal(const Point3& point) const {
+Vec3 Mesh::getNormal(const Point3&) const {
     return normal;
 }
 
@@ -31,8 +55,8 @@ Vec3 Mesh::transformNormal(const Vec3& localNormal) const {
 }
 
 
-std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
-    if (triangles.empty()) return nullptr;
+std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& trianglePointers){
+    if (trianglePointers.empty()) return nullptr;
     // Create Bounding Box
     float minX = std::numeric_limits<float>::infinity();
     float minY = std::numeric_limits<float>::infinity();
@@ -42,7 +66,7 @@ std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
     float maxY = -std::numeric_limits<float>::infinity();
     float maxZ = -std::numeric_limits<float>::infinity();
 
-    for (Triangle* triangle : triangles) {
+    for (Triangle* triangle : trianglePointers) {
         const Point3 vertices[] = {
             triangle->getA(),
             triangle->getB(),
@@ -61,8 +85,8 @@ std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
         }
     }
     BoundingBox boundingBox(Point3(minX, minY, minZ), Point3(maxX, maxY, maxZ));
-    if (triangles.size() <= 4) {
-        return std::make_unique<BVHNode>(boundingBox, nullptr, nullptr, triangles);
+    if (trianglePointers.size() <= 4) {
+        return std::make_unique<BVHNode>(boundingBox, nullptr, nullptr, trianglePointers);
     }
 
     // Split Triangles along longest axis
@@ -76,7 +100,7 @@ std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
     int axis = (width >= height && width >= depth) ? 0
                 : (height >= width && height >= depth) ? 1
                 : 2;
-    std::sort(triangles.begin(), triangles.end(),
+    std::sort(trianglePointers.begin(), trianglePointers.end(),
         [axis](Triangle* a, Triangle* b) {
             Point3 ca = a->getCentroid();
             Point3 cb = b->getCentroid();
@@ -88,9 +112,9 @@ std::unique_ptr<BVHNode> Mesh::buildBVH(std::vector<Triangle*>& triangles){
 
             return ca.z < cb.z;
         });
-    size_t middle = triangles.size() / 2;
-    left.assign(triangles.begin(), triangles.begin() + middle);
-    right.assign(triangles.begin() + middle, triangles.end());
+    size_t middle = trianglePointers.size() / 2;
+    left.assign(trianglePointers.begin(), trianglePointers.begin() + middle);
+    right.assign(trianglePointers.begin() + middle, trianglePointers.end());
     
     // Recursively build the two children
     auto leftNode = buildBVH(left);
