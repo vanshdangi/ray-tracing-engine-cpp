@@ -163,6 +163,10 @@ Vec3 Mesh::getShadingNormal(const Intersection& hit, const Point3&) const {
     const std::size_t index =
         static_cast<std::size_t>(triangle - triangles.data());
 
+    if (index >= data.triangleIndices.size()) {
+        Vec3 localNormal = triangle->getNormal(Point3());
+        return transform.transformNormal(localNormal).normalized();
+    }
     const auto& corners = data.triangleIndices[index].vertices;
 
     // If any normal is absent, fall back to the flat triangle normal.

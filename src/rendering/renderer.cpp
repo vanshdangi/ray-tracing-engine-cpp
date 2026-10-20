@@ -111,9 +111,22 @@ std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
 }
 
 Color Renderer::calculateReflection(const Ray& ray, const HitRecord& hit, int depth) const {
+    Vec3 normal = hit.intersection.object->getShadingNormal(hit.intersection, hit.point);
+
+    // Orient the shading normal against the incoming ray.
+    if (normal.dot(ray.direction) > 0.0f) {
+        normal = normal * -1.0f;
+    }
+
     Ray reflectedRay;
-    reflectedRay.direction = ray.direction - hit.normal*(2*(ray.direction.dot(hit.normal)));
-    reflectedRay.origin = hit.point + hit.normal*(1e-5f);
+    reflectedRay.direction = ray.direction - normal*(2.0f*(ray.direction.dot(normal)));
+
+    Vec3 geometricNormal = hit.normal;
+    if (geometricNormal.dot(ray.direction) > 0.0f) {
+        geometricNormal = geometricNormal * -1.0f;
+    }
+
+    reflectedRay.origin = hit.point + geometricNormal*(1e-5f);
     return traceRay(reflectedRay, depth + 1);
 }
 
