@@ -3,6 +3,7 @@
 #include <world/objects/mesh.hpp>
 #include <maths/matrix4.hpp>
 #include <algorithm>
+#include <cmath>
 
 Mesh::Mesh(Transform transform_, OBJData data_, Material mat_) : Object3D(mat_), transform(transform_), data(std::move(data_)), triangles(data.triangles) {
     std::cout << "Total Triangles: " << triangles.size() << '\n';
@@ -206,13 +207,19 @@ Vec3 Mesh::getShadingNormal(const Intersection& hit, const Point3&) const {
     const float v = hit.v;
     const float w = 1.0f - u - v;
 
-    Vec3 localNormal = (
+    Vec3 interpolatedNormal = (
         nA * w +
         nB * u +
         nC * v
-    ).normalized();
+    );
 
-    return transform.transformNormal(localNormal).normalized();
+    if (!std::isfinite(interpolatedNormal.magnitudeSquared()) ||
+        interpolatedNormal.magnitudeSquared() == 0.0f) {
+        Vec3 localNormal = triangle->getNormal(Point3());
+        return transform.transformNormal(localNormal).normalized();
+    }
+
+    return transform.transformNormal(interpolatedNormal.normalized()).normalized();
 }
 
 Point2 Mesh::getTextCoords(const Intersection& hit) const {
