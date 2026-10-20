@@ -1,6 +1,21 @@
 #include <render_stats.hpp>
 
 RenderStats renderStats;
+thread_local RenderStats* RenderStats::threadTriangleTestOwner = nullptr;
+thread_local uint64_t* RenderStats::threadTriangleTests = nullptr;
+
+RenderStats::TriangleTestCounterScope::TriangleTestCounterScope(
+	RenderStats& stats, uint64_t* counter)
+	: previousStats(RenderStats::threadTriangleTestOwner),
+	  previousCounter(RenderStats::threadTriangleTests) {
+	RenderStats::threadTriangleTestOwner = &stats;
+	RenderStats::threadTriangleTests = counter;
+}
+
+RenderStats::TriangleTestCounterScope::~TriangleTestCounterScope() {
+	RenderStats::threadTriangleTestOwner = previousStats;
+	RenderStats::threadTriangleTests = previousCounter;
+}
 
 void RenderStats::reset() {
 	pixelsRendered.store(0);
@@ -37,8 +52,19 @@ void RenderStats::recordShadowRay() {
 	++shadowRays;
 }
 
-void RenderStats::recordTriangleTest() {
-	++triangleTests;
+void RenderStats::recordTriangleTests(uint64_t count) {
+	if (count == 0) {
+		return;
+	}
+	if (threadTriangleTestOwner == this && threadTriangleTests != nullptr) {
+		*threadTriangleTests += count;
+		return;
+	}
+	triangleTests.fetch_add(count);
+}
+
+void RenderStats::mergeTriangleTests(uint64_t count) {
+	triangleTests.fetch_add(count);
 }
 
 RenderStats::Snapshot RenderStats::snapshot() const {

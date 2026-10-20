@@ -29,8 +29,6 @@ Intersection Mesh::intersects(const Ray& ray) const {
     float closestV = 0.0f;
 
     for (const Triangle& triangle : triangles) {
-        renderStats.recordTriangleTest();
-
         const Intersection intersection = triangle.intersects(localRay);
         if (intersection.t >= 0.0f && intersection.t < closestT) {
             closestT = intersection.t;
@@ -39,6 +37,7 @@ Intersection Mesh::intersects(const Ray& ray) const {
             closestV = intersection.v;
         }
     }
+    renderStats.recordTriangleTests(triangles.size());
 
     if (closestObj == nullptr) {
         return {-1.0f, nullptr, nullptr};
@@ -144,8 +143,6 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
         float closestV = 0.0f;
 
         for (const Triangle* triangle : node->triangles) {
-            renderStats.recordTriangleTest();
-
             Intersection intersection = triangle->intersects(localRay);
             if (intersection.t >= 0.0f && intersection.t < closestT) {
                 closestT = intersection.t;
@@ -154,6 +151,7 @@ Intersection Mesh::traverseBVH(const BVHNode* node, const Ray& localRay) const {
                 closestV = intersection.v;
             }
         }
+        renderStats.recordTriangleTests(node->triangles.size());
 
         if (closestT == std::numeric_limits<float>::infinity()) {
             return {-1,nullptr, nullptr};

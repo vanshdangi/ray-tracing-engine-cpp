@@ -4,6 +4,19 @@
 #include <cstdint>
 
 struct RenderStats {
+    class TriangleTestCounterScope {
+    public:
+        TriangleTestCounterScope(RenderStats& stats, uint64_t* counter);
+        ~TriangleTestCounterScope();
+
+        TriangleTestCounterScope(const TriangleTestCounterScope&) = delete;
+        TriangleTestCounterScope& operator=(const TriangleTestCounterScope&) = delete;
+
+    private:
+        RenderStats* previousStats;
+        uint64_t* previousCounter;
+    };
+
     struct Snapshot {
         uint64_t pixelsRendered = 0;
         uint64_t primaryRays = 0;
@@ -24,11 +37,15 @@ struct RenderStats {
     void recordPrimaryRay();
     void recordRay();
     void recordShadowRay();
-    void recordTriangleTest();
+    void recordTriangleTests(uint64_t count);
+    void mergeTriangleTests(uint64_t count);
 
     Snapshot snapshot() const;
 
 private:
+    static thread_local RenderStats* threadTriangleTestOwner;
+    static thread_local uint64_t* threadTriangleTests;
+
     std::atomic<uint64_t> pixelsRendered = 0;
     std::atomic<uint64_t> primaryRays = 0;
     std::atomic<uint64_t> raysTraced = 0;

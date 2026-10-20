@@ -4,6 +4,8 @@
 #include <world/objects/sphere.hpp>
 
 #include <array>
+#include <thread>
+#include <vector>
 
 namespace {
 
@@ -119,4 +121,31 @@ TEST(RendererTest, RenderWritesAntialiasedPixelsAndRecordsWork) {
             expectColorNear(image.getPixel(x, y), expectedBackgroundPixel(camera, x, y));
         }
     }
+}
+
+TEST(RenderStatsTest, MergesThreadLocalTriangleTestCounts) {
+    constexpr uint64_t testsPerThread = 10000;
+    constexpr size_t threadCount = 4;
+    std::vector<uint64_t> triangleTestCounts(threadCount, 0);
+    std::vector<std::thread> threads;
+
+    renderStats.reset();
+    for (size_t i = 0; i < threadCount; ++i) {
+        threads.emplace_back([&, i] {
+            RenderStats::TriangleTestCounterScope counterScope(
+                renderStats, &triangleTestCounts[i]);
+            renderStats.recordTriangleTests(testsPerThread);
+        });
+    }
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    uint64_t triangleTestCount = 0;
+    for (const uint64_t count : triangleTestCounts) {
+        triangleTestCount += count;
+    }
+    renderStats.mergeTriangleTests(triangleTestCount);
+
+    EXPECT_EQ(renderStats.snapshot().triangleTests, testsPerThread * threadCount);
 }

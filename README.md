@@ -37,9 +37,9 @@ The project explores the fundamentals of 3D rendering, geometric intersection al
 
 ![Suzanne rendered by the engine](images/suzanne.png)
 
-### BVH acceleration: Before vs. After
+### BVH acceleration: Brute Force vs. BVH
 
-The following benchmark compares brute-force mesh intersection testing with BVH-accelerated intersection testing using the same scene and rendering settings.
+The following benchmark compares brute-force mesh intersection testing (`--no-bvh`) with BVH-accelerated intersection testing using the same scene and rendering settings. Triangle-test statistics use per-thread counters merged after rendering to avoid shared-counter contention.
 
 **Test configuration**
 
@@ -48,34 +48,32 @@ The following benchmark compares brute-force mesh intersection testing with BVH-
 - Compiler: MSVC 19.38.33135
 - Build system: CMake + Visual Studio 2022 (MSBuild)
 - Target architecture: x64
-- Resolution: 800 × 600
+- Resolution: 1,440 × 810
 - Sampling: 16 samples per pixel (4 × 4 grid)
 - Scene: Suzanne mesh containing 968 triangles and a plane
 - Lighting: Point light
 
-| Metric | Before BVH | After BVH |
+| Metric | Brute force (`--no-bvh`) | With BVH |
 |---|---:|---:|
-| Render time | 199.992 s | 1.974 s |
-| Pixels rendered | 480,000 | 480,000 |
-| Primary rays | 7,680,000 | 7,680,000 |
-| Rays traced | 7,680,000 | 7,680,000 |
-| Shadow rays | 4,641,906 | 4,641,906 |
-| Triangle intersection tests | 11,927,605,008 | 75,125,291 |
-| Pixels per second | 2,400.1 | 243,133 |
-| Rays per second | 38,401.6 | 3,890,130 |
-| Triangle tests per primary ray | 1,553.07 | 9.78194 |
+| Render time | 28.360 s | 1.597 s |
+| Pixels rendered | 1,166,400 | 1,166,400 |
+| Primary rays | 18,662,400 | 18,662,400 |
+| Rays traced | 18,662,400 | 18,662,400 |
+| Shadow rays | 10,792,680 | 10,792,680 |
+| Triangle intersection tests | 28,512,517,440 | 136,887,961 |
+| Pixels per second | 41,128.4 | 730,445 |
+| Rays per second | 658,055 | 11,687,100 |
+| Triangle tests per primary ray | 1,527.81 | 7.33496 |
 
 ### Results
 
-- **101.30× faster rendering** on the benchmark scene.
-- **99.01% reduction** in render time.
-- **99.37% fewer triangle intersection tests.**
+- **17.76× faster rendering** with BVH acceleration.
+- **94.37% reduction** in render time.
+- **99.52% fewer triangle intersection tests.**
 
-The original implementation tested mesh triangles using brute force. With BVH acceleration, rays first test bounding boxes and only traverse relevant branches of the hierarchy. Triangle intersection tests are performed at leaf nodes rather than against every triangle in the mesh.
+The brute-force implementation tests mesh triangles directly. With BVH acceleration, rays first test bounding boxes and traverse only relevant branches of the hierarchy. Triangle intersection tests are performed at leaf nodes rather than against every triangle in the mesh.
 
-In this benchmark, BVH acceleration reduced triangle intersection tests from approximately 11.93 billion to 75.13 million while rendering the same number of pixels and tracing the same number of primary and shadow rays.
-
-This substantially reduces unnecessary geometric intersection calculations and makes rendering complex meshes far more practical.
+In this benchmark, BVH acceleration reduced triangle intersection tests from approximately 28.51 billion to 136.89 million while rendering the same number of pixels and tracing the same number of primary and shadow rays.
 
 *Benchmark results are from the recorded runs and may vary with hardware, compiler settings, and system load.*
 

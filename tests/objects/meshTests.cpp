@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <render_stats.hpp>
 #include <world/objects/mesh.hpp>
 
 #include <utility>
@@ -91,4 +92,19 @@ TEST(MeshTest, FindsNearestIntersectionWithoutBVH) {
     EXPECT_EQ(hit.object, &mesh);
     ASSERT_NE(hit.primitive, nullptr);
     EXPECT_EQ(hit.primitive->getA(), Point3(8.0f, 0.0f, 0.0f));
+}
+
+TEST(MeshTest, RecordsTriangleTestsWithAndWithoutBVH) {
+    Mesh mesh(translatedMeshTransform(), makeMeshData(), Material());
+    const Ray ray{Point3(8.25f, 0.25f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)};
+
+    Mesh::setBVHEnabled(false);
+    renderStats.reset();
+    mesh.intersects(ray);
+    EXPECT_EQ(renderStats.snapshot().triangleTests, 5);
+
+    Mesh::setBVHEnabled(true);
+    renderStats.reset();
+    mesh.intersects(ray);
+    EXPECT_EQ(renderStats.snapshot().triangleTests, 3);
 }

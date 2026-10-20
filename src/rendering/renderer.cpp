@@ -24,6 +24,7 @@ void Renderer::render() {
     }
 
     std::vector<std::thread> threads;
+    std::vector<uint64_t> triangleTestCounts(threadCount, 0);
 
     size_t rowsPerThread = img.getHeight() / threadCount;
 
@@ -33,17 +34,22 @@ void Renderer::render() {
                     ? img.getHeight()
                     : startY + rowsPerThread;
 
-        threads.emplace_back(&Renderer::renderRows, this, startY, endY);
+        threads.emplace_back(
+            &Renderer::renderRows, this, startY, endY, &triangleTestCounts[i]);
     }
 
-    for (auto& thread : threads) {
-        thread.join();
+    uint64_t triangleTestCount = 0;
+    for (size_t i = 0; i < threads.size(); ++i) {
+        threads[i].join();
+        triangleTestCount += triangleTestCounts[i];
     }
 
+    renderStats.mergeTriangleTests(triangleTestCount);
     renderStats.finishRender();
 }
 
-void Renderer::renderRows(size_t startY, size_t endY) {
+void Renderer::renderRows(size_t startY, size_t endY, uint64_t* triangleTestCounter) {
+    RenderStats::TriangleTestCounterScope counterScope(renderStats, triangleTestCounter);
 
     for (size_t y = startY; y < endY; ++y) {
 
