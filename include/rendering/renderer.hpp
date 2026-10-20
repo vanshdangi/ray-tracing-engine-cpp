@@ -11,7 +11,7 @@
 
 class Renderer{
 public:
-    Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_);
+    Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_, float ambientIntensity_);
     void render();
     void renderRows(size_t startY, size_t endY, uint64_t* triangleTestCounter = nullptr);
     Color traceRay(const Ray& ray, int depth) const;
@@ -24,6 +24,7 @@ private:
     Image& img;
     const Scene& scene;
     const PointLight& light;
+    const float ambientIntensity;
     const int maxReflectionDepth = 3;
 
     static constexpr float sampleX[16] = {

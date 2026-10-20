@@ -4,12 +4,6 @@
 #include <rendering/camera.hpp>
 #include <world/lighting.hpp>
 
-struct SceneConfig {
-    Scene scene;
-    Camera camera;
-    PointLight light;
-};
-
 SceneConfig createBenchmarkScene(
     unsigned int width,
     unsigned int height

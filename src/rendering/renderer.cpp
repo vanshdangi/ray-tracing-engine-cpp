@@ -5,8 +5,8 @@
 #include <world/hitRecord.hpp>
 #include <thread>
 
-Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_)
-    : cam(cam_), img(img_), scene(scene_), light(light_) {}
+Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_, float ambientIntensity_)
+    : cam(cam_), img(img_), scene(scene_), light(light_), ambientIntensity(ambientIntensity_) {}
 
 void Renderer::render() {
     renderStats.beginRender();
@@ -145,9 +145,6 @@ Color Renderer::calculateLighting(const HitRecord& hit, const Ray& ray) const {
     if (normal.dot(ray.direction) > 0.0f) {
         normal = normal * -1.0f;
     }
-
-    // Ambient lighting (constant diffuse fill).
-    constexpr float ambientIntensity = 0.15f;
 
     Color ambient(
         kd.r * ambientIntensity,

@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     }();
 
     Image img(WIDTH, HEIGHT);
-    Renderer renderer(config.camera, img, config.scene, config.light);
+    Renderer renderer(config.camera, img, config.scene, config.light, config.ambientIntensity);
     renderer.render();
 
     const RenderStats::Snapshot stats = renderStats.snapshot();

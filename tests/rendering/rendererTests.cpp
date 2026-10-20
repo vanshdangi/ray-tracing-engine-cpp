@@ -60,7 +60,7 @@ TEST(RendererTest, BackgroundUsesTopHorizonAndGroundColors) {
     Image image(1, 1);
     Scene scene;
     PointLight light(Point3(0.0f, 0.0f, 0.0f), 1.0f, Color(1.0f, 1.0f, 1.0f));
-    const Renderer renderer(camera, image, scene, light);
+    const Renderer renderer(camera, image, scene, light, 0.15f);
 
     const Color top = Color::fromSrgb(0.275f, 0.588f, 0.863f);
     const Color horizon = Color::fromSrgb(0.824f, 0.922f, 0.961f);
@@ -91,7 +91,7 @@ TEST(RendererTest, FindsNearestSceneIntersection) {
     scene.addObject(std::make_unique<Sphere>(nearTransform, 1.0f, Material()));
     scene.addObject(std::make_unique<Sphere>(farTransform, 1.0f, Material()));
     PointLight light(Point3(0.0f, 0.0f, 0.0f), 1.0f, Color(1.0f, 1.0f, 1.0f));
-    const Renderer renderer(camera, image, scene, light);
+    const Renderer renderer(camera, image, scene, light, 0.15f);
 
     const auto hit = renderer.findClosestHit(
         Ray{Point3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, 1.0f)});
@@ -108,7 +108,7 @@ TEST(RendererTest, RenderWritesAntialiasedPixelsAndRecordsWork) {
     Image image(width, height);
     Scene scene;
     PointLight light(Point3(0.0f, 0.0f, 0.0f), 1.0f, Color(1.0f, 1.0f, 1.0f));
-    Renderer renderer(camera, image, scene, light);
+    Renderer renderer(camera, image, scene, light, 0.15f);
     renderStats.reset();
 
     renderer.render();
