@@ -23,6 +23,10 @@ function(add_ray_tracing_engine_test TEST_NAME TEST_FILE)
             ${PROJECT_SOURCE_DIR}/include
     )
 
+    target_compile_definitions(${TEST_NAME} PRIVATE
+        PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    )
+
     target_link_libraries(${TEST_NAME}
         PRIVATE
             GTest::gtest_main

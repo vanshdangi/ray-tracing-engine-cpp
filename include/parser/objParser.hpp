@@ -34,3 +34,4 @@ public:
 };
 
 int parseOBJIndex(int index, std::size_t count);
+OBJData loadOBJ(const std::string& relativePath);

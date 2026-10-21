@@ -51,6 +51,10 @@ else()
     )
 endif()
 
+target_compile_definitions(ray_tracing_engine PRIVATE
+    PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
 # ---------------- Includes ----------------
 target_include_directories(ray_tracing_engine
     PRIVATE

@@ -28,8 +28,7 @@ SceneConfig createBenchmarkScene(
     white.albedo = Color(1.0f, 1.0f, 1.0f);
     
     // Suzanne
-    OBJParser parser;
-    OBJData data = parser.parser("objects/suzanne.obj");
+    OBJData data = loadOBJ("objects/suzanne.obj");
     Transform meshTransform(
         Point3(0.0f, 0.0f, 4.0f),
         Vec3(0.0f, 180.0f, 0.0f),
@@ -95,8 +94,7 @@ SceneConfig createBunnyScene(
     bunnyMaterial.albedo = Color::fromSrgb(0.784f, 0.588f, 0.392f);
 
     // stanford-bunny
-    OBJParser parser;
-    OBJData data = parser.parser("objects/stanford-bunny.obj");
+    OBJData data = loadOBJ("objects/stanford-bunny.obj");
     Transform bunnyTransform(
         Point3(0.6f, -2.9f, 5.5f),
         Vec3(0.0f, 180.0f, 0.0f),
@@ -214,8 +212,7 @@ SceneConfig createReflectionsScene(
     );
 
     // Suzanne mesh
-    OBJParser parser;
-    OBJData data = parser.parser("objects/suzanne.obj");
+    OBJData data = loadOBJ("objects/suzanne.obj");
     Transform monkeyTransform(
         Point3(0.8f, -0.8f, 2.0f),
         Vec3(0.0f, 180.0f, 0.0f),

@@ -129,3 +129,10 @@ TEST(OBJParserTest, RejectsZeroAndOutOfRangeIndices) {
     EXPECT_THROW(parseOBJIndex(-4, 3), std::runtime_error);
     EXPECT_EQ(parseOBJIndex(-1, 3), 2);
 }
+
+TEST(OBJParserTest, LoadsModelRelativeToProjectSourceDirectory) {
+    const OBJData data = loadOBJ("objects/suzanne.obj");
+
+    EXPECT_FALSE(data.vertices.empty());
+    EXPECT_FALSE(data.triangles.empty());
+}

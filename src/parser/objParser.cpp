@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-
+#include <filesystem>
 #include <core/material.hpp>
 
 namespace {
@@ -105,6 +105,26 @@ OBJVertexIndex parseFaceVertex(
 }
 
 } // namespace
+
+
+OBJData loadOBJ(const std::string& relativePath) {
+#ifdef PROJECT_SOURCE_DIR
+    const auto path = std::filesystem::path(PROJECT_SOURCE_DIR) / relativePath;
+#else
+    const auto path = std::filesystem::path(relativePath);
+#endif
+
+    OBJParser parser;
+    OBJData data = parser.parser(path.string());
+
+    if (data.triangles.empty()) {
+        throw std::runtime_error(
+            "Failed to load a usable OBJ: " + path.string()
+        );
+    }
+
+    return data;
+}
 
 OBJData OBJParser::parser(const std::string& filename) {
     std::ifstream file(filename);
