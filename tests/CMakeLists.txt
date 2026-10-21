@@ -99,7 +99,7 @@ add_ray_tracing_engine_test(
 
 #Rendering
 add_ray_tracing_engine_test(
-    Cameratest
+    CameraTest
     rendering/cameraTests.cpp
     ${PROJECT_SOURCE_DIR}/src/rendering/camera.cpp
 )

@@ -8,7 +8,7 @@ class Triangle : public Object3D{
 public:
     Triangle(Point3 A_, Point3 B_, Point3 C_, Material mat_);
     Intersection intersects(const Ray& ray) const;
-    Vec3 getNormal(const Point3& Point) const;
+    Vec3 getNormal(const Point3&) const;
     Vec3 transformNormal(const Vec3& localNormal) const;
     Point3 getCentroid() const;
     const Point3& getA() const;

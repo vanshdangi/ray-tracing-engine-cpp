@@ -18,7 +18,7 @@ Intersection Plane::intersects(const Ray& ray) const {
     return {t, this, nullptr};
 }
 
-Vec3 Plane::getNormal(const Point3& point) const {
+Vec3 Plane::getNormal(const Point3&) const {
     return normal;
 }
 

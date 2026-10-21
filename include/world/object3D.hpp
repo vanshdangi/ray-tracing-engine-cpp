@@ -16,7 +16,7 @@ public:
     virtual Vec3 getShadingNormal(const Intersection&, const Point3& point) const {
         return transformNormal(getNormal(point));
     }
-    virtual Point2 getTextCoords(const Intersection&) const {
+    virtual Point2 getTexCoords(const Intersection&) const {
         return Point2(0.0f, 0.0f);
     }
 

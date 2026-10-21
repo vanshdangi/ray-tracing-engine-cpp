@@ -103,10 +103,10 @@ std::optional<HitRecord> Renderer::findClosestHit(const Ray& ray) const {
     std::optional<Intersection> closestintersection;
 
     for(const auto& obj : scene.getObjects()) {
-        Intersection interseciton = obj->intersects(ray);
-        if(interseciton.t != -1 && interseciton.t < closestT) {
-            closestT = interseciton.t;
-            closestintersection = interseciton;
+        Intersection intersection = obj->intersects(ray);
+        if(intersection.t != -1 && intersection.t < closestT) {
+            closestT = intersection.t;
+            closestintersection = intersection;
         }
     }
     if(!closestintersection) {

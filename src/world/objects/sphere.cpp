@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <maths/matrix4.hpp>
 
-Sphere::Sphere(Transform transform_, float raidus_, Material mat_) : Object3D(mat_), transform(transform_), radius(raidus_) {}
+Sphere::Sphere(Transform transform_, float radius_, Material mat_) : Object3D(mat_), transform(transform_), radius(radius_) {}
 
 Intersection Sphere::intersects(const Ray& ray) const {
     Ray localRay = transform.toLocal(ray);

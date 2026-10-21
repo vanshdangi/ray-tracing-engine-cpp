@@ -40,7 +40,7 @@ Intersection Triangle::intersects(const Ray& ray) const {
     return {t, this, this, u, v};
 }
 
-Vec3 Triangle::getNormal(const Point3& point) const {
+Vec3 Triangle::getNormal(const Point3&) const {
     return normal;
 }
 

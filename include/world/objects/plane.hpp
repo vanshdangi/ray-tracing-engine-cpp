@@ -9,7 +9,7 @@ class Plane : public Object3D{
 public:
     Plane(Transform transform_, Vec3 normal_, Material mat_);
     Intersection intersects(const Ray& ray) const;
-    Vec3 getNormal(const Point3& point) const;
+    Vec3 getNormal(const Point3&) const;
     Vec3 transformNormal(const Vec3& localNormal) const;
     Point3 getCenter() const;
 

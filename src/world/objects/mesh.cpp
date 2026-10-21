@@ -222,7 +222,7 @@ Vec3 Mesh::getShadingNormal(const Intersection& hit, const Point3&) const {
     return transform.transformNormal(interpolatedNormal.normalized()).normalized();
 }
 
-Point2 Mesh::getTextCoords(const Intersection& hit) const {
+Point2 Mesh::getTexCoords(const Intersection& hit) const {
     const auto* triangle =
         static_cast<const Triangle*>(hit.primitive);
 
