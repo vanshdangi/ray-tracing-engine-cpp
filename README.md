@@ -1,57 +1,183 @@
 # C++ Ray Tracing Engine
 
-A CPU-based 3D ray tracing engine built from scratch in C++, featuring geometric primitives, mesh loading, lighting, reflections, and Bounding Volume Hierarchy (BVH) acceleration.
+[![C++ CI](https://github.com/vanshdangi/ray-tracing-engine-cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/vanshdangi/ray-tracing-engine-cpp/actions/workflows/ci.yml)
 
-The project explores the fundamentals of 3D rendering, geometric intersection algorithms, spatial acceleration structures, and performance optimization.
+A C++20 CPU ray tracer for rendering 3D scenes built from geometric primitives and Wavefront OBJ triangle meshes. It features perspective cameras, diffuse and ambient lighting, hard shadows, reflections, supersampling, and an optional median-split bounding volume hierarchy (BVH) for accelerating mesh intersections. SFML displays rendered images.
+
+## Highlights
+
+- **BVH acceleration:** 17.76× faster rendering and 99.52% fewer triangle tests on the benchmark scene (1,440 × 810, 16 samples per pixel, Intel Core i7-12700F, MSVC Release). See [Recorded BVH results](#recorded-bvh-results).
+- **Real meshes:** renders the 69,451-triangle Stanford Bunny with the BVH enabled.
+- **Built from scratch:** vector and matrix math, intersection routines, BVH construction and traversal, the OBJ loader, and the multithreaded renderer all live in this repository. SFML is used only to display and encode the final image, and GoogleTest only for the tests.
+- **Tested:** 80+ unit tests, including BVH-versus-brute-force comparisons on seeded random rays, run by GitHub Actions on every push and pull request.
+- **Shading pipeline:** linear-space lighting with sRGB output, smooth shading from OBJ vertex normals, and ray offsets that stay correct on meshes with inverted winding.
 
 ## Showcase
 
-![Ray Tracing Engine — Stanford Bunny](images/stanford-bunny.png)
-
-![Ray Tracing Engine — Reflections](images/reflections.png)
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="images/stanford-bunny.png" alt="Stanford Bunny scene" width="100%">
+      <br>
+      <sub>Stanford Bunny</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="images/reflections.png" alt="Reflective scene" width="100%">
+      <br>
+      <sub>Reflections</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="images/suzanne.png" alt="Suzanne benchmark scene" width="100%">
+      <br>
+      <sub>Suzanne benchmark scene</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
-### Rendering
+- CPU ray tracing with perspective camera controls.
+- Sphere, plane, triangle, and axis-aligned bounding-box geometry; triangle meshes loaded from Wavefront OBJ.
+- OBJ loader with polygon triangulation, negative indices, and per-corner normals and texture coordinates.
+- Translation, rotation, and scaling transformations.
+- Point-light diffuse shading, ambient lighting, hard shadows, and reflections.
+- Smooth shading from OBJ vertex normals.
+- Supersampling and linear RGB to sRGB output conversion.
+- Median-split BVH acceleration for mesh intersection queries.
+- Render statistics for timing, rays, triangle tests, and throughput.
+- Command-line control of scene, resolution, samples per pixel, and BVH use.
+- SFML window display or headless rendering to PNG.
 
-- **Ray tracing:** Casts rays through the scene to calculate pixel colors.
-- **Camera:** Perspective camera with configurable position, orientation, field of view, and aspect ratio.
-- **Geometric primitives:** Sphere, plane, triangle, and axis-aligned bounding box.
-- **Triangle meshes:** Supports rendering complex 3D models composed of triangles.
-- **OBJ loading:** Loads triangle mesh geometry from Wavefront OBJ files, including vertex normals and texture coordinates.
-- **Object transformations:** Supports translation, rotation, and scaling using transformation matrices.
-- **Lighting:** Point lights with direct Lambertian diffuse shading and ambient lighting.
-- **Shadows:** Hard shadows calculated using shadow rays.
-- **Reflections:** Supports reflective ray tracing.
-- **Background:** Gradient background shading.
-- **Supersampling:** Supports multiple samples per pixel to improve image quality.
-- **Color pipeline:** Uses linear RGB internally and converts to sRGB for final output.
+## How it works
 
-### Performance
+### Rendering pipeline
 
-- **Bounding Volume Hierarchy (BVH):** Accelerates mesh intersection queries using a recursively constructed, median-split hierarchy of axis-aligned bounding boxes.
-- **Performance instrumentation:** Tracks render time, rays traced, shadow rays, triangle intersection tests, and rendering throughput.
-- **Benchmarking:** Measures the impact of BVH acceleration against brute-force triangle intersection testing.
+1. **Camera.** For each pixel, `--spp` sub-pixel samples are placed on a regular grid (4 × 4 by default). Each sample becomes a perspective primary ray.
+2. **Intersection.** The renderer tests every scene object and keeps the closest hit. Each object intersects the ray in its own object space: the ray is transformed by the object's inverse transform, and normals are transformed back using the inverse scale. Rotation, translation, and non-uniform scale therefore work for every shape.
+3. **Meshes.** A mesh builds a median-split BVH over its triangles. A ray walks the hierarchy and runs a Möller–Trumbore test only against triangles in leaves whose bounding boxes it hits; the test also returns barycentric coordinates for shading. With `--no-bvh`, every triangle is tested instead.
+4. **Shading.** Ambient light plus Lambertian diffuse from a single point light. Hard shadows come from a shadow ray toward the light. Reflections recurse to a depth of 3 and are skipped for materials with zero reflectivity.
+5. **Output.** Samples are averaged in linear RGB, clamped, and converted to sRGB for the PNG and the display.
 
-## Performance
+Rendering is parallelized by splitting the image rows into contiguous bands, one per worker thread.
 
-![Suzanne rendered by the engine](images/suzanne.png)
+### Implementation notes
 
-### BVH acceleration: Brute Force vs. BVH
+- **Scale-invariant triangle test.** The ray–triangle "parallel" check compares the determinant against a threshold relative to the edge and ray lengths instead of a fixed epsilon. A fixed `1e-5` threshold silently rejected almost every triangle of the Stanford Bunny, whose edges are on the order of 10⁻³ model units. Regression tests cover triangles of widely different sizes.
+- **Orientation-independent shading and ray offsets.** The shading normal is oriented toward the incoming ray, and ray origins are offset along an oriented normal, so meshes with inverted winding shade, shadow, and reflect like correctly wound ones. Tests cover reversed winding and reflection self-intersection.
+- **Smooth shading.** Per-corner OBJ normals are interpolated with the barycentric coordinates from the intersection test. If normals are missing, zero-length, or non-finite, shading falls back to the triangle's geometric normal. Reflection directions use the same interpolated normal.
+- **OBJ loading.** Supports `v`, `vt`, `vn`, and `f` in all index forms (`v`, `v/vt`, `v//vn`, `v/vt/vn`), negative indices, and polygons (fan-triangulated). Malformed or out-of-range input is rejected with a line number, and `loadOBJ` throws if no usable triangles are loaded.
+- **Low-overhead statistics.** Triangle-test counts, by far the hottest counter, accumulate in per-thread counters that are merged after the render (see [Measurement note](#measurement-note)).
 
-The following benchmark compares brute-force mesh intersection testing (`--no-bvh`) with BVH-accelerated intersection testing using the same scene and rendering settings. Triangle-test statistics use per-thread counters merged after rendering to avoid shared-counter contention.
+## Build
 
-**Test configuration**
+### Requirements
 
-- Build configuration: Release
-- CPU: Intel Core i7-12700F (12 cores, 20 logical processors)
-- Compiler: MSVC 19.38.33135
-- Build system: CMake + Visual Studio 2022 (MSBuild)
-- Target architecture: x64
-- Resolution: 1,440 × 810
-- Sampling: 16 samples per pixel (4 × 4 grid)
-- Scene: Suzanne mesh containing 968 triangles and a plane
-- Lighting: Point light
+- C++20 compiler
+- CMake 3.26 or later
+- SFML 3 Graphics
+
+SFML is required even for `--headless` runs, because it encodes the PNG. The test targets use GoogleTest, which CMake fetches during configuration.
+
+### Configure and build
+
+Install the requirements for your environment, then configure and build:
+
+**Windows (PowerShell):**
+
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+**Linux:**
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+The main executable target is `ray_tracing_engine`; the reusable library target is `raytracer_core`. The project also builds GoogleTest targets.
+
+## Scene selection
+
+Choose a demo scene with `--scene`. If omitted, the engine renders `benchmark`.
+
+| Scene | Description |
+|---|---|
+| `bunny` | Stanford Bunny mesh |
+| `reflections` | Reflective scene |
+| `benchmark` | Suzanne mesh benchmark scene |
+
+### Bundled models
+
+| Model | File | Triangles | Normals in file |
+|---|---|---:|---|
+| Suzanne | `objects/suzanne.obj` | 968 (quads fan-triangulated) | Per-face, so it shades flat |
+| Stanford Bunny | `objects/stanford-bunny.obj` | 69,451 | None, so it shades flat per triangle |
+
+## Command-line options
+
+| Option | Description | Default |
+|---|---|---|
+| `--scene <name>` | Select `bunny`, `reflections`, or `benchmark` | `benchmark` |
+| `--output <file>` | Set the output PNG filename | `render.png` |
+| `--width <pixels>` | Set the render width; must be a positive integer | `1440` |
+| `--height <pixels>` | Set the render height; must be a positive integer | `810` |
+| `--spp <count>` | Set samples per pixel; must be a positive integer | `16` |
+| `--no-bvh` | Disable BVH acceleration and use brute-force triangle tests | BVH enabled |
+| `--headless` | Save the image without opening an SFML window | Display enabled |
+
+For example:
+
+**Windows (PowerShell):**
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene bunny --output bunny.png
+```
+
+**Linux:**
+
+```bash
+./build/ray_tracing_engine --scene bunny --output bunny.png
+```
+
+By default, the engine saves the PNG and displays it in an SFML window. Add `--headless` to save the image and exit without opening a window.
+
+### Reproducing the showcase images
+
+The images in this README were rendered with the default resolution (1,440 × 810) and 16 samples per pixel:
+
+```bash
+./build/ray_tracing_engine --scene bunny --headless --output images/stanford-bunny.png
+./build/ray_tracing_engine --scene reflections --headless --output images/reflections.png
+./build/ray_tracing_engine --scene benchmark --headless --output images/suzanne.png
+```
+
+On Windows, use `.\build\Release\ray_tracing_engine.exe` instead of `./build/ray_tracing_engine`.
+
+## Benchmarking
+
+Compare BVH acceleration with brute-force triangle testing by rendering the same scene with and without `--no-bvh`. These commands use the default benchmark scene, resolution, and sample count:
+
+**Windows (PowerShell):**
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --output bvh.png
+.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --no-bvh --output no-bvh.png
+```
+
+**Linux:**
+
+```bash
+./build/ray_tracing_engine --scene benchmark --headless --output bvh.png
+./build/ray_tracing_engine --scene benchmark --headless --no-bvh --output no-bvh.png
+```
+
+For a meaningful comparison, use the same build configuration, scene, resolution, and samples per pixel for both runs.
+
+### Recorded BVH results
+
+The following recorded Release-build runs used the same Suzanne scene (968 triangles and a plane), point light, 1,440 × 810 resolution, and 16 samples per pixel (4 × 4 grid). The machine was an Intel Core i7-12700F (12 cores, 20 logical processors), using MSVC 19.38.33135, CMake with Visual Studio 2022/MSBuild, and x64 architecture. Triangle-test statistics use per-thread counters merged after rendering.
 
 | Metric | Brute force (`--no-bvh`) | With BVH |
 |---|---:|---:|
@@ -65,205 +191,59 @@ The following benchmark compares brute-force mesh intersection testing (`--no-bv
 | Rays per second | 658,055 | 11,687,100 |
 | Triangle tests per primary ray | 1,527.81 | 7.33496 |
 
-### Results
+In these runs, BVH acceleration rendered 17.76× faster and reduced triangle intersection tests by 99.52%. Results can vary with hardware, compiler settings, and system load.
 
-- **17.76× faster rendering** with BVH acceleration.
-- **94.37% reduction** in render time.
-- **99.52% fewer triangle intersection tests.**
+The benchmark scene has no reflective materials, so rays traced equals primary rays; shadow rays are counted separately. Brute-force tests equal 968 triangles × (primary + shadow rays), which matches the table.
 
-The brute-force implementation tests mesh triangles directly. With BVH acceleration, rays first test bounding boxes and traverse only relevant branches of the hierarchy. Triangle intersection tests are performed at leaf nodes rather than against every triangle in the mesh.
+### Measurement note
 
-In this benchmark, BVH acceleration reduced triangle intersection tests from approximately 28.51 billion to 136.89 million while rendering the same number of pixels and tracing the same number of primary and shadow rays.
+An earlier version of this benchmark reported a 101.30× BVH speedup (199.992 s brute force at 800 × 600). That version counted triangle tests with a single atomic counter shared by every thread. The contention made the brute-force baseline artificially slow: about 60 million triangle tests per second then, versus about 1,005 million per second after switching to per-thread counters. The figures above use per-thread counters and replace the earlier ones.
 
-*Benchmark results are from the recorded runs and may vary with hardware, compiler settings, and system load.*
+## Testing
 
-## How It Works
-
-### 1. Ray generation
-
-The camera generates rays through the image plane. Each ray is traced into the scene to determine which object it intersects and what color should be returned.
-
-### 2. Intersection testing
-
-Scene objects implement ray intersection queries. When a ray intersects an object, the engine records the intersection distance and relevant primitive information to determine the closest hit.
-
-### 3. Shading
-
-At a hit point, the renderer evaluates the surface material and lighting. Shadow rays determine whether the light is obstructed, while reflective rays contribute reflected color.
-
-### 4. Mesh acceleration
-
-Testing every triangle in a complex mesh for every ray becomes expensive. The BVH organizes triangles into a hierarchy of bounding boxes.
-
-During traversal, the engine rejects entire subtrees when a ray misses their bounding boxes. When a leaf is reached, only its stored triangles need to be tested.
-
-The current implementation uses median splitting along the longest axis of a node's bounding box, with up to four triangles per leaf.
-
-## Technologies
-
-- **C++** — Rendering engine, geometry, intersection algorithms, and acceleration structures.
-- **SFML 3** — Image display.
-- **Wavefront OBJ** — 3D mesh input format.
-
-## Building and Running
-
-The CMake build creates the reusable `raytracer_core` library, the main executable, and the GoogleTest targets.
-
-### Requirements
-
-- A C++ compiler supporting the C++ standard specified in `CMakeLists.txt`
-- CMake
-- SFML 3
-
-### Windows
-
-Install a compatible C++ compiler and SFML 3, then configure and build using CMake.
-
-```powershell
-cmake -S . -B build
-cmake --build build --config Release
-```
-
-### Linux
-
-Install a C++ compiler, CMake, and SFML 3 using your distribution's package manager.
+Build the project, then run the test suite with CTest:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+ctest --test-dir build --build-config Release --output-on-failure
 ```
 
-### macOS
+The suite covers:
 
-Install Xcode Command Line Tools, CMake, and SFML 3. If using Homebrew, install the required dependencies first.
+- Math types, colors (including sRGB conversion), and rays.
+- Sphere, plane, AABB, triangle, and bounding-box intersection, including triangles of widely different sizes.
+- Transforms: round trips, inverse matrices, and normals under non-uniform scale.
+- OBJ parsing: polygons, negative indices, normals and texture coordinates, and malformed input.
+- Mesh and BVH behavior: BVH results compared with brute force on seeded random rays, edge hits, misses, and overlapping triangles.
+- Renderer correctness: interpolated and fallback shading normals, reversed winding, ambient and diffuse lighting, shadows, reflection depth and offsets, and a triangle-mesh sphere compared with an analytic sphere.
+- Camera ray generation.
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+GitHub Actions builds the project and runs the full suite on every push and pull request.
+
+## Project structure
+
+```text
+.
+├── include/              Public headers (mirrors src/)
+├── src/
+│   ├── bvh/              Bounding boxes and BVH nodes
+│   ├── core/             Image
+│   ├── parser/           OBJ parser and loadOBJ
+│   ├── rendering/        Camera and renderer
+│   ├── scenes/           Demo scenes
+│   ├── world/            Scene, transforms, lighting, hit records
+│   │   └── objects/      Sphere, plane, AABB, triangle, mesh
+│   ├── render_stats.cpp  Render statistics
+│   └── main.cpp          Command-line entry point and SFML display
+├── tests/                GoogleTest suites
+├── objects/              Bundled OBJ models
+├── images/               Showcase renders
+└── .github/workflows/    CI configuration
 ```
-
-### Selecting a Scene
-
-The engine supports multiple demo scenes, selectable using `--scene`.
-
-| Scene | Description |
-|---|---|
-| `bunny` | Stanford Bunny mesh showcase |
-| `reflections` | Demonstrates recursive reflections |
-| `benchmark` | Suzanne mesh benchmark scene |
-
-If no scene is specified, `benchmark` is used by default.
-
-### Command-Line Options
-
-| Option | Description | Default |
-|---|---|---|
-| `--scene <name>` | Select `bunny`, `reflections`, or `benchmark` | `benchmark` |
-| `--output <file>` | Specify the output PNG filename | `render.png` |
-| `--width <pixels>` | Set the render width | `1440` |
-| `--height <pixels>` | Set the render height | `810` |
-| `--spp <count>` | Set the number of samples per pixel | `16` |
-| `--no-bvh` | Disable BVH acceleration and use brute-force triangle intersection testing | Enabled by default |
-| `--headless` | Render and save the image without opening an SFML window | Disabled |
-
-Width and height can be configured independently. All dimensions and the samples-per-pixel value must be positive integers.
-
-### Running the Engine
-
-The following examples assume the executable is run from the repository root.
-
-**Windows (PowerShell)**
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene bunny --output bunny.png
-.\build\Release\ray_tracing_engine.exe --scene reflections --output reflections.png
-.\build\Release\ray_tracing_engine.exe --scene benchmark --output benchmark.png
-```
-
-**Linux**
-
-```bash
-./build/ray_tracing_engine --scene bunny --output bunny.png
-./build/ray_tracing_engine --scene reflections --output reflections.png
-./build/ray_tracing_engine --scene benchmark --output benchmark.png
-```
-
-**macOS**
-
-```bash
-./build/ray_tracing_engine --scene bunny --output bunny.png
-./build/ray_tracing_engine --scene reflections --output reflections.png
-./build/ray_tracing_engine --scene benchmark --output benchmark.png
-```
-
-By default, the engine renders the selected scene, saves it as a PNG, and displays the result in an SFML window. Close the window to exit.
-
-### Headless Rendering
-
-Use `--headless` to render and save an image without creating a display window. This is useful for automated benchmarks, scripts, CI pipelines, and environments without a graphical display.
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene benchmark --headless
-.\build\Release\ray_tracing_engine.exe --scene bunny --headless --output bunny.png
-```
-
-The program saves the image and exits automatically after rendering.
-
-### Configuring Resolution and Samples
-
-Use `--width` and `--height` to change the render resolution, and `--spp` to configure samples per pixel.
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene benchmark --width 800 --height 600 --spp 4
-```
-
-For a headless render at a custom resolution and sample count:
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene reflections --headless --width 1920 --height 1080 --spp 16 --output reflections.png
-```
-
-Higher sample counts can improve antialiasing quality at the cost of additional rendering time.
-
-### Benchmarking
-
-The `--no-bvh` argument disables BVH acceleration and uses brute-force triangle intersection testing. This allows you to compare rendering performance with and without BVH acceleration.
-
-**With BVH:**
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --output bvh.png
-```
-
-**Without BVH:**
-
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --no-bvh --output no-bvh.png
-```
-
-Run both commands with the same build configuration, resolution, samples per pixel, and scene settings for a meaningful comparison. The engine reports render time, ray counts, triangle intersection statistics, and throughput after rendering.
-
-
-## Running Tests
-
-The GoogleTest targets are built alongside the main executable. Execute the complete test suite with:
-
-```bash
-ctest --test-dir build --output-on-failure
-```
-
-## Project Goals
-
-This project was developed to explore and implement the fundamentals of a ray tracing renderer, with an emphasis on understanding the underlying mathematics and algorithms rather than relying entirely on a prebuilt rendering framework.
-
-Key areas of focus include:
-
-- 3D geometry and coordinate transformations.
-- Ray-object intersection algorithms.
-- Lighting, shadows, and reflections.
-- Recursive spatial acceleration structures.
-- Performance measurement and optimization.
 
 ## License
 
-Licensed under the terms in `LICENSE`.
+Licensed under the terms in [LICENSE](LICENSE).
+
+## Credits
+
+The Stanford Bunny is courtesy of the Stanford Computer Graphics Laboratory, and Suzanne is Blender's test mesh. Both models retain their original terms.
