@@ -107,6 +107,8 @@ The current implementation uses median splitting along the longest axis of a nod
 
 ## Building and Running
 
+The CMake build creates the reusable `raytracer_core` library, the main executable, and the GoogleTest targets.
+
 ### Requirements
 
 - A C++ compiler supporting the C++ standard specified in `CMakeLists.txt`
@@ -244,7 +246,7 @@ Run both commands with the same build configuration, resolution, samples per pix
 
 ## Running Tests
 
-Execute the complete test suite:
+The GoogleTest targets are built alongside the main executable. Execute the complete test suite with:
 
 ```bash
 ctest --test-dir build --output-on-failure

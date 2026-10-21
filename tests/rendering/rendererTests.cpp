@@ -16,8 +16,8 @@ Camera makeCamera(int width, int height) {
         Vec3(0.0f, 0.0f, 1.0f),
         90.0f,
         static_cast<float>(width) / static_cast<float>(height),
-        static_cast<float>(width),
-        static_cast<float>(height)
+        width,
+        height
     );
 }
 
