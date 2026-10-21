@@ -1,5 +1,8 @@
 #include <iostream>
 #include <memory>
+#include <charconv>
+#include <string>
+#include <system_error>
 #include <SFML/Graphics.hpp>
 #include <render_stats.hpp>
 #include <core/image.hpp>
@@ -7,21 +10,18 @@
 #include <scenes/demoScenes.hpp>
 #include <world/objects/mesh.hpp>
 
+unsigned int parsePositiveInt(const std::string& value, const std::string& option);
+
 int main(int argc, char* argv[])
 {
-    constexpr unsigned int WIDTH = 1440;
-    constexpr unsigned int HEIGHT = 810;
-    //constexpr unsigned int WIDTH = 800;
-    //constexpr unsigned int HEIGHT = 600;
-
-    sf::RenderWindow window(
-        sf::VideoMode({WIDTH, HEIGHT}),
-        "Ray Tracing Engine"
-    );
+    unsigned int WIDTH = 1440;
+    unsigned int HEIGHT = 810;
 
     std::string sceneName = "benchmark";
     std::string pngName = "render.png";
     bool useBVH = true;
+    bool headLess = false;
+    std::size_t samplesPerPixel = 16;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -40,8 +40,40 @@ int main(int argc, char* argv[])
             }
 
             pngName = argv[++i];
+        } else if (arg == "--spp") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --spp requires a positive integer\n";
+                return 1;
+            }
+
+            const std::string value = argv[++i];
+            const auto result = std::from_chars(
+                value.data(), value.data() + value.size(), samplesPerPixel);
+            if (result.ec != std::errc{} ||
+                result.ptr != value.data() + value.size() ||
+                samplesPerPixel == 0) {
+                std::cerr << "Error: --spp must be a positive integer\n";
+                return 1;
+            }
+        } else if (arg == "--width" || arg == "--height") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: " << arg
+                        << " requires a positive integer\n";
+                return 1;
+            }
+
+            const unsigned int value =
+                parsePositiveInt(argv[++i], arg);
+
+            if (arg == "--width") {
+                WIDTH = value;
+            } else {
+                HEIGHT = value;
+            }
         } else if (arg == "--no-bvh") {
             useBVH = false;
+        } else if (arg == "--headless") {
+            headLess = true;
         } else {
             std::cerr << "Error: Unknown argument: " << arg << '\n';
             return 1;
@@ -65,6 +97,7 @@ int main(int argc, char* argv[])
 
     Image img(WIDTH, HEIGHT);
     Renderer renderer(config.camera, img, config.scene, config.light, config.ambientIntensity);
+    renderer.setSamplesPerPixel(samplesPerPixel);
     renderer.render();
 
     const RenderStats::Snapshot stats = renderStats.snapshot();
@@ -106,27 +139,53 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Upload the image to the GPU.
-    sf::Texture texture;
-    if (!texture.loadFromImage(sfImage))
-        return 1;
+    if (!headLess) {
+        sf::RenderWindow window(
+            sf::VideoMode({WIDTH, HEIGHT}),
+            "Ray Tracing Engine"
+        );
 
-    sf::Sprite sprite(texture);
+        // Upload the image to the GPU.
+        sf::Texture texture;
+        if (!texture.loadFromImage(sfImage))
+            return 1;
 
-    while (window.isOpen())
-    {
-        while (const std::optional event = window.pollEvent())
+        sf::Sprite sprite(texture);
+
+        while (window.isOpen())
         {
-            if (event->is<sf::Event::Closed>())
-                window.close();
+            while (const std::optional event = window.pollEvent())
+            {
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+            }
+
+            window.clear();
+
+            window.draw(sprite);
+
+            window.display();
         }
-
-        window.clear();
-
-        window.draw(sprite);
-
-        window.display();
     }
 
     return 0;
+}
+
+
+unsigned int parsePositiveInt(const std::string& value, const std::string& option) {
+    unsigned int result = 0;
+
+    const auto [ptr, ec] = std::from_chars(
+        value.data(), value.data() + value.size(), result
+    );
+
+    if (ec != std::errc{} ||
+        ptr != value.data() + value.size() ||
+        result == 0) {
+        throw std::invalid_argument(
+            option + " must be a positive integer"
+        );
+    }
+
+    return result;
 }

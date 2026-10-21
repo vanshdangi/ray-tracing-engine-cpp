@@ -3,10 +3,20 @@
 #include <rendering/renderer.hpp>
 #include <world/objects/sphere.hpp>
 #include <world/hitRecord.hpp>
+#include <cmath>
+#include <stdexcept>
 #include <thread>
 
 Renderer::Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_, float ambientIntensity_)
     : cam(cam_), img(img_), scene(scene_), light(light_), ambientIntensity(ambientIntensity_) {}
+
+void Renderer::setSamplesPerPixel(std::size_t samplesPerPixel_) {
+    if (samplesPerPixel_ == 0) {
+        throw std::invalid_argument("Samples per pixel must be greater than zero");
+    }
+
+    samplesPerPixel = samplesPerPixel_;
+}
 
 void Renderer::render() {
     renderStats.beginRender();
@@ -50,6 +60,12 @@ void Renderer::render() {
 
 void Renderer::renderRows(size_t startY, size_t endY, uint64_t* triangleTestCounter) {
     RenderStats::TriangleTestCounterScope counterScope(renderStats, triangleTestCounter);
+    const std::size_t gridWidth = static_cast<std::size_t>(
+        std::ceil(std::sqrt(static_cast<double>(samplesPerPixel))));
+    const std::size_t gridHeight =
+        samplesPerPixel / gridWidth + (samplesPerPixel % gridWidth != 0);
+    const float gridWidthFloat = static_cast<float>(gridWidth);
+    const float gridHeightFloat = static_cast<float>(gridHeight);
 
     for (size_t y = startY; y < endY; ++y) {
 
@@ -57,9 +73,13 @@ void Renderer::renderRows(size_t startY, size_t endY, uint64_t* triangleTestCoun
 
             Color finalColor;
 
-            for (size_t i = 0; i < 16; ++i) {
+            for (std::size_t i = 0; i < samplesPerPixel; ++i) {
+                const float sampleX =
+                    (static_cast<float>(i % gridWidth) + 0.5f) / gridWidthFloat;
+                const float sampleY =
+                    (static_cast<float>(i / gridWidth) + 0.5f) / gridHeightFloat;
                 Ray ray = cam.generateRay(
-                    static_cast<int>(x), static_cast<int>(y), sampleX[i], sampleY[i]);
+                    static_cast<int>(x), static_cast<int>(y), sampleX, sampleY);
                 renderStats.recordPrimaryRay();
                 Color sampleColor = traceRay(ray, 0);
                 finalColor += sampleColor;
@@ -67,7 +87,7 @@ void Renderer::renderRows(size_t startY, size_t endY, uint64_t* triangleTestCoun
 
             renderStats.recordPixel();
 
-            finalColor /= 16.0f;
+            finalColor /= static_cast<float>(samplesPerPixel);
 
             // clamp
             finalColor.r = std::min(1.0f, std::max(0.0f, finalColor.r));

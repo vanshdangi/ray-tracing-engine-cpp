@@ -142,7 +142,7 @@ cmake --build build
 
 ### Selecting a Scene
 
-The engine supports multiple demo scenes, selectable using the `--scene` argument.
+The engine supports multiple demo scenes, selectable using `--scene`.
 
 | Scene | Description |
 |---|---|
@@ -152,24 +152,23 @@ The engine supports multiple demo scenes, selectable using the `--scene` argumen
 
 If no scene is specified, `benchmark` is used by default.
 
-### Benchmarking
+### Command-Line Options
 
-The `--no-bvh` argument disables BVH acceleration and uses brute-force triangle intersection testing instead. This allows you to compare rendering performance with and without BVH acceleration.
+| Option | Description | Default |
+|---|---|---|
+| `--scene <name>` | Select `bunny`, `reflections`, or `benchmark` | `benchmark` |
+| `--output <file>` | Specify the output PNG filename | `render.png` |
+| `--width <pixels>` | Set the render width | `1440` |
+| `--height <pixels>` | Set the render height | `810` |
+| `--spp <count>` | Set the number of samples per pixel | `16` |
+| `--no-bvh` | Disable BVH acceleration and use brute-force triangle intersection testing | Enabled by default |
+| `--headless` | Render and save the image without opening an SFML window | Disabled |
 
-```powershell
-.\build\Release\ray_tracing_engine.exe --scene benchmark --output bvh.png
-.\build\Release\ray_tracing_engine.exe --scene benchmark --no-bvh --output no-bvh.png
-```
-
-Run both commands with the same build configuration and scene settings for a meaningful comparison. The engine reports render time and triangle intersection statistics after rendering.
-
-### Saving the Render
-
-Rendered images are automatically saved as PNG files. Use `--output` to specify the output filename. If omitted, the image is saved as `render.png`.
+Width and height can be configured independently. All dimensions and the samples-per-pixel value must be positive integers.
 
 ### Running the Engine
 
-Run the executable from the repository root so that the model paths resolve correctly.
+The following examples assume the executable is run from the repository root.
 
 **Windows (PowerShell)**
 
@@ -195,7 +194,53 @@ Run the executable from the repository root so that the model paths resolve corr
 ./build/ray_tracing_engine --scene benchmark --output benchmark.png
 ```
 
-The executable displays the rendered image in an SFML window and saves it to the specified PNG file.
+By default, the engine renders the selected scene, saves it as a PNG, and displays the result in an SFML window. Close the window to exit.
+
+### Headless Rendering
+
+Use `--headless` to render and save an image without creating a display window. This is useful for automated benchmarks, scripts, CI pipelines, and environments without a graphical display.
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --headless
+.\build\Release\ray_tracing_engine.exe --scene bunny --headless --output bunny.png
+```
+
+The program saves the image and exits automatically after rendering.
+
+### Configuring Resolution and Samples
+
+Use `--width` and `--height` to change the render resolution, and `--spp` to configure samples per pixel.
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --width 800 --height 600 --spp 4
+```
+
+For a headless render at a custom resolution and sample count:
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene reflections --headless --width 1920 --height 1080 --spp 16 --output reflections.png
+```
+
+Higher sample counts can improve antialiasing quality at the cost of additional rendering time.
+
+### Benchmarking
+
+The `--no-bvh` argument disables BVH acceleration and uses brute-force triangle intersection testing. This allows you to compare rendering performance with and without BVH acceleration.
+
+**With BVH:**
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --output bvh.png
+```
+
+**Without BVH:**
+
+```powershell
+.\build\Release\ray_tracing_engine.exe --scene benchmark --headless --no-bvh --output no-bvh.png
+```
+
+Run both commands with the same build configuration, resolution, samples per pixel, and scene settings for a meaningful comparison. The engine reports render time, ray counts, triangle intersection statistics, and throughput after rendering.
+
 
 ## Running Tests
 

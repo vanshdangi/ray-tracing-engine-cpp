@@ -4,6 +4,7 @@
 #include <world/objects/sphere.hpp>
 
 #include <array>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -121,6 +122,35 @@ TEST(RendererTest, RenderWritesAntialiasedPixelsAndRecordsWork) {
             expectColorNear(image.getPixel(x, y), expectedBackgroundPixel(camera, x, y));
         }
     }
+}
+
+TEST(RendererTest, SampleCountControlsPrimaryRaysPerPixel) {
+    constexpr int width = 2;
+    constexpr int height = 2;
+    constexpr std::size_t samplesPerPixel = 3;
+    Camera camera = makeCamera(width, height);
+    Image image(width, height);
+    Scene scene;
+    PointLight light(Point3(0.0f, 0.0f, 0.0f), 1.0f, Color(1.0f, 1.0f, 1.0f));
+    Renderer renderer(camera, image, scene, light, 0.15f);
+    renderer.setSamplesPerPixel(samplesPerPixel);
+    renderStats.reset();
+
+    renderer.render();
+
+    EXPECT_EQ(
+        renderStats.snapshot().primaryRays,
+        static_cast<uint64_t>(width * height * samplesPerPixel));
+}
+
+TEST(RendererTest, RejectsZeroSamplesPerPixel) {
+    Camera camera = makeCamera(1, 1);
+    Image image(1, 1);
+    Scene scene;
+    PointLight light(Point3(0.0f, 0.0f, 0.0f), 1.0f, Color(1.0f, 1.0f, 1.0f));
+    Renderer renderer(camera, image, scene, light, 0.15f);
+
+    EXPECT_THROW(renderer.setSamplesPerPixel(0), std::invalid_argument);
 }
 
 TEST(RenderStatsTest, MergesThreadLocalTriangleTestCounts) {

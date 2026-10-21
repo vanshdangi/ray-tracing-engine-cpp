@@ -6,12 +6,14 @@
 #include <world/scene.hpp>
 #include <world/lighting.hpp>
 #include <world/hitRecord.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 
 class Renderer{
 public:
     Renderer(const Camera& cam_, Image& img_, const Scene& scene_, const PointLight& light_, float ambientIntensity_);
+    void setSamplesPerPixel(std::size_t samplesPerPixel);
     void render();
     void renderRows(size_t startY, size_t endY, uint64_t* triangleTestCounter = nullptr);
     Color traceRay(const Ray& ray, int depth) const;
@@ -25,18 +27,6 @@ private:
     const Scene& scene;
     const PointLight& light;
     const float ambientIntensity;
+    std::size_t samplesPerPixel = 16;
     const int maxReflectionDepth = 3;
-
-    static constexpr float sampleX[16] = {
-        0.125f, 0.375f, 0.625f, 0.875f,
-        0.125f, 0.375f, 0.625f, 0.875f,
-        0.125f, 0.375f, 0.625f, 0.875f,
-        0.125f, 0.375f, 0.625f, 0.875f
-    };
-    static constexpr float sampleY[16] = {
-        0.125f, 0.125f, 0.125f, 0.125f,
-        0.375f, 0.375f, 0.375f, 0.375f,
-        0.625f, 0.625f, 0.625f, 0.625f,
-        0.875f, 0.875f, 0.875f, 0.875f
-    };
 };

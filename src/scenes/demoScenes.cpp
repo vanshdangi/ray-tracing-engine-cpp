@@ -73,11 +73,11 @@ SceneConfig createBenchmarkScene(
         Color(1.0f, 1.0f, 1.0f)
     );
 
-    return SceneConfig(
+    return SceneConfig{
         std::move(scene),
         mainCam,
         light
-    );
+    };
 }
 
 SceneConfig createBunnyScene(
@@ -139,11 +139,11 @@ SceneConfig createBunnyScene(
         Color(1.0f, 1.0f, 1.0f)
     );
 
-    return SceneConfig(
+    return SceneConfig{
         std::move(scene),
         mainCam,
         light
-    );
+    };
 }
 
 SceneConfig createReflectionsScene(
@@ -257,9 +257,9 @@ SceneConfig createReflectionsScene(
         Color(1.0f, 1.0f, 1.0f)
     );
 
-    return SceneConfig(
+    return SceneConfig{
         std::move(scene),
         mainCam,
         light
-    );
+    };
 }
